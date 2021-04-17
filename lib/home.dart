@@ -29,6 +29,8 @@ class _HomeState extends State<Home> {
     print(items);print(19);
     if(items.length==0){
       empty=1;
+      current=0;
+      name='New';
     }
     else {
       current = items[0]['id'];
@@ -40,19 +42,38 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> getBusinessData()async{
-    List<Map<String,dynamic>> temp = await db.getTargets(current);
-    targets.add({'name':'daily','value':temp[0]['dailyTarget']});
-    targets.add({'name':'monthly','value':temp[0]['monthlyTarget']});
+    int todayEarn=0,monthEarn=0;
+
     orders = await db.getPendingOrders(current);
     payments = await db.getPendingPayments(current);
     achievements = await db.getAchievements(current);
-    total = await db.getTodayPayments(current);
-    visible=true;
+    total = await db.getPayments(current,0,0);
+    DateTime d,tod = DateTime.now();
+    total.forEach((element){
+      print(element);print(53);
+      d = DateTime.parse(element['date']);
+      if(d.month==tod.month && d.year == tod.year && element['hasPaid']==1){
+        monthEarn+=element['amount'];
+        if(d.day == tod.day)
+          todayEarn+=element['amount'];
+      }
+    });
+    targets.add({'name':'daily','target':this.items[0]['dailyTarget'],'value':todayEarn});
+    targets.add({'name':'monthly','target':this.items[0]['monthlyTarget'],'value':monthEarn});
+    this.setState(() {
+      visible=true;
+    });
   }
 
   @override
+  void initState(){
+    super.initState();
+    this.initData();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    this.initData();current=0;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -83,10 +104,11 @@ class _HomeState extends State<Home> {
                   ),
                   // onPressed: ()async {
                   //   dynamic ret= await Navigator.pushNamed(context, '/addnew');
-                  //   this.setState(() {
-                  //      name=ret['name'];
-                  //      current = ret['id'];
-                  //   });
+                  //   if(ret!=null)
+                    //   this.setState(() {
+                    //      name=ret['name'];
+                    //      current = ret['id'];
+                    //   });
                   // },
                   onPressed: ()async{
                     await db.clearAll();
@@ -94,9 +116,10 @@ class _HomeState extends State<Home> {
                 )
               ],
             ),
-            SliverList(delegate: SliverChildBuilderDelegate(
+            SliverList(
+                delegate: SliverChildBuilderDelegate(
                 (BuildContext context,int index){
-                  if(this.empty!=0)
+                  // if(this.empty!=0)
                     return Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -144,7 +167,7 @@ class _HomeState extends State<Home> {
                       ),
                       margin: EdgeInsets.symmetric(vertical: 10.0,horizontal: 5.0),
                     );
-                  else return null;
+                  // else return null;
                 },childCount: 1
             )),
             SliverVisibility(
@@ -163,11 +186,15 @@ class _HomeState extends State<Home> {
                                     ),
                                   ),
                                   onPressed: () async{
-                                  dynamic ret =Navigator.pushNamed(context, '/addnew');
-                                  this.setState(() {
-                                    this.name=ret['name'];
-                                    this.current=ret['id'];
-                                  });
+                                  dynamic ret =await Navigator.pushNamed(context, '/addnew');
+                                  print(ret);print(176);
+                                  if(ret!=null) {
+                                    this.setState(() {
+                                      this.name = ret['name'];
+                                      this.current = ret['id'];
+                                    });
+                                    this.getBusinessData();
+                                  }
                                 }
                                 ),
                             margin: EdgeInsets.symmetric(vertical: 100.0,horizontal: 10),
@@ -219,28 +246,28 @@ class _HomeState extends State<Home> {
               ),
             ),
             ),
-            // SliverList(
-            //   delegate: SliverChildBuilderDelegate(
-            //       (BuildContext context,int index){
-            //         if(this.orders.length!=0){
-            //           return Container(
-            //             child: Center(
-            //               child: Text(
-            //                 'No Pending Orders',
-            //                 style: GoogleFonts.openSans(
-            //                   fontSize: 20.0,
-            //                   color: Colors.blueGrey[800]
-            //                 ),
-            //               ),
-            //             ),
-            //             margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 3.0),
-            //           );
-            //         }
-            //         else return null;
-            //       },
-            //     childCount: this.orders.length
-            //   ),
-            // ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                  (BuildContext context,int index){
+                    if(this.orders.length==0){
+                      return Container(
+                        child: Center(
+                          child: Text(
+                            'No Pending Orders',
+                            style: GoogleFonts.openSans(
+                              fontSize: 15.0,
+                              color: Colors.blueGrey[800]
+                            ),
+                          ),
+                        ),
+                        margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+                      );
+                    }
+                    else return null;
+                  },
+                childCount: 1
+              ),
+            ),
             SliverVisibility(
               visible: this.visible,
               sliver: SliverList(
@@ -303,6 +330,28 @@ class _HomeState extends State<Home> {
                 ),
               ),
             ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                  (BuildContext context,int index){
+                    if(this.payments.length==0){
+                      return Container(
+                        child: Center(
+                          child: Text(
+                            'No Payments Due',
+                            style: GoogleFonts.openSans(
+                              fontSize: 15.0,
+                              color: Colors.blueGrey[800]
+                            ),
+                          ),
+                        ),
+                        margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+                      );
+                    }
+                    else return null;
+                  },
+                childCount: 1
+              ),
+            ),
             SliverVisibility(
               visible: this.visible,
               sliver: SliverList(
@@ -356,23 +405,35 @@ class _HomeState extends State<Home> {
   }
 
   Container renderProgress(index) {
+    dynamic percent=0;String txt='0.00 %';
+    if(this.targets[index]['target']==0){
+
+    }
     return Container(
         child: CircularPercentIndicator(
-          percent: 0.5,
-          radius: 50.0,
-          backgroundColor: Colors.purple[50],
+          percent: percent,
+          radius: 100.0,
+          backgroundColor: Colors.orange[50],
           fillColor: Colors.deepPurpleAccent,
+          progressColor: Colors.orangeAccent,
           center: Text(
-            this.targets[index]['value'],
+            txt,
             style: GoogleFonts.openSans(
-              color: Colors.orangeAccent
+              color: Colors.orangeAccent,
+              fontSize: 30.0
             ),
           ),
           animation: true,
           animationDuration: 700,
-          footer: Text(
-            this.targets[index]['name'],
-            style: GoogleFonts.openSans(),
+          footer: Container(
+            child: Text(
+              this.targets[index]['name'],
+              style: GoogleFonts.openSans(
+                fontSize: 20.0,
+                color: Colors.orange[50]
+              ),
+            ),
+            margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
           ),
         ),
     );

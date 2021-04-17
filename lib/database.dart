@@ -61,7 +61,7 @@ class DatabaseHelper{
     ''');
     await db.execute('''create table achievements(
               id integer primary key,
-              int bid,
+              bid integer,
               daily text,
               dtimes integer,
               monthly text,
@@ -76,7 +76,6 @@ class DatabaseHelper{
     await db.delete('business',where: '1=1');
     await db.delete('orders',where: '1=1');
     await db.delete('payments',where: '1=1');
-
   }
 
 
@@ -85,7 +84,7 @@ class DatabaseHelper{
     await db.insert('business', {
       'id': id,
       'name': name,
-      'date': DateTime.now(),
+      'date': DateTime.now().toString(),
       'totalMoney': 0,
       'dailyTarget': dt,
       'monthlyTarget': mt
@@ -125,7 +124,7 @@ class DatabaseHelper{
 
   Future<List<Map<String,dynamic>>> getPendingOrders(int bid) async{
     Database db= await database;
-    List<Map<String, dynamic>> res = await db.query('orders',where:'bid=?, completed=?',whereArgs:[bid,0]);
+    List<Map<String, dynamic>> res = await db.query('orders',where:'bid=? and completed=?',whereArgs:[bid,0]);
     print(res);print(128);
     return res;
   }
@@ -139,13 +138,13 @@ class DatabaseHelper{
       return res;
     }
     else if(id!=0){
-      List<Map<String, dynamic>> res = await db.query('payments',where: 'id=?, bid=>',whereArgs: [id,bid]);
+      List<Map<String, dynamic>> res = await db.query('payments',where: 'id=? and bid=?',whereArgs: [id,bid]);
       print(res);
       print(143);
       return res;
     }
     else if(oid!=0){
-      List<Map<String, dynamic>> res = await db.query('payments',where: 'oid=?, bid=?',whereArgs: [oid,bid]);
+      List<Map<String, dynamic>> res = await db.query('payments',where: 'oid=? and bid=?',whereArgs: [oid,bid]);
       print(res);
       print(149);
       return res;
@@ -155,7 +154,7 @@ class DatabaseHelper{
   Future<List<Map<String,dynamic>>> getTodayPayments(int bid)async{
     Database db= await database;
     DateTime d = DateTime.now();
-    List<Map<String, dynamic>> res = await db.query('payments',columns: ['sum(amount)'],where: 'bid=? and hasPaid=? and date like ?-?-?%',whereArgs: [bid,1,d.day,d.month,d.year]);
+    List<Map<String, dynamic>> res = await db.query('payments',columns: ['amount'],where: 'bid=? and hasPaid=? and date like ?-?-?',whereArgs: [bid,1,'${d.year}','%${d.month}','%${d.day}%']);
     print(res);
     print(158);
     return res;
@@ -163,7 +162,7 @@ class DatabaseHelper{
 
   Future<List<Map<String,dynamic>>> getPendingPayments(int bid) async{
     Database db= await database;
-    List<Map<String, dynamic>> res = await db.query('payments',where: 'bid=?, hasPaid=?',whereArgs: [bid,0]);
+    List<Map<String, dynamic>> res = await db.query('payments',where: 'bid=? and hasPaid=?',whereArgs: [bid,0]);
     print(res);
     print(166);
     return res;
@@ -171,7 +170,7 @@ class DatabaseHelper{
 
   Future<List<Map<String,dynamic>>> getBusiness() async{
     Database db = await database;
-    List<Map<String,dynamic>> res=await db.query('business',columns: ['id']);
+    List<Map<String,dynamic>> res=await db.query('business');
     print(res);print(173);
     return res;
   }
@@ -185,7 +184,7 @@ class DatabaseHelper{
 
   Future<List<Map<String,dynamic>>> getAchievements(int id) async{
     Database db = await database;
-    List<Map<String,dynamic>> res=await db.query('achievements',where: 'id=?',whereArgs: [id]);
+    List<Map<String,dynamic>> res=await db.query('achievements',where: 'bid=?',whereArgs: [id]);
     print(res);print(187);
     return res;
   }

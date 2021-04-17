@@ -71,7 +71,8 @@ class _SelectBizState extends State<SelectBiz> {
                         trailing: Text(
                           this.items[index]['totalMoney'].toString(),
                           style: GoogleFonts.openSans(
-                            color: Colors.white
+                            color: Colors.white,
+                            fontSize: 25.0
                           ),
                         ),
                       ),
