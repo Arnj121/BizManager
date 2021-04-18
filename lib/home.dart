@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,18 +19,17 @@ class _HomeState extends State<Home> {
 
   //All the Business data that will be rendered
   List<Map<String,dynamic>> targets = [];
-  List<Map<String,dynamic>> orders = [],total=[];
-  List<Map<String,dynamic>> payments = [];
+  List<Map<String,dynamic>> pendingOrders = [],total=[];
+  List<Map<String,dynamic>> pendingPayments = [];
   List<Map<String,dynamic>> achievements = [];
+  List<Map<String,dynamic>> recentOrders = [];
   //END
-  int empty=0;
   int current=0;String name='New';
   bool visible=false;
   Future<void> initData()async{
     items = await db.getBusiness();
     print(items);print(19);
     if(items.length==0){
-      empty=1;
       current=0;
       name='New';
     }
@@ -36,21 +37,32 @@ class _HomeState extends State<Home> {
       current = items[0]['id'];
       name = items[0]['name'];
       await this.getBusinessData();
-      if (empty == 1)
-        empty = 0;
     }
   }
 
   Future<void> getBusinessData()async{
+    this.pendingOrders=[];this.pendingPayments=[];
+    this.recentOrders=[];this.total=[];
     int todayEarn=0,monthEarn=0;
+    List<Map<String,dynamic>> temp=[];
 
-    orders = await db.getPendingOrders(current);
-    payments = await db.getPendingPayments(current);
+    items=await db.getBusiness();
+
+    temp = await db.getPendingOrders(current);
+    temp.forEach((e){this.pendingOrders.add(jsonDecode(jsonEncode(e)));});
+
+    temp = await db.getPendingPayments(current);
+    temp.forEach((e){this.pendingPayments.add(jsonDecode(jsonEncode(e)));});
+
     achievements = await db.getAchievements(current);
-    total = await db.getPayments(current,0,0);
+
+    temp= await db.getRecentOrders(current);
+    temp.forEach((e){this.recentOrders.add(jsonDecode(jsonEncode(e)));});
+
     DateTime d,tod = DateTime.now();
+
+    total = await db.getPayments(current,0,0);
     total.forEach((element){
-      print(element);print(53);
       d = DateTime.parse(element['date']);
       if(d.month==tod.month && d.year == tod.year && element['hasPaid']==1){
         monthEarn+=element['amount'];
@@ -58,8 +70,10 @@ class _HomeState extends State<Home> {
           todayEarn+=element['amount'];
       }
     });
-    targets.add({'name':'daily','target':this.items[0]['dailyTarget'],'value':todayEarn});
-    targets.add({'name':'monthly','target':this.items[0]['monthlyTarget'],'value':monthEarn});
+
+    targets.add({'name':'Daily','target':this.items[0]['dailyTarget'],'value':todayEarn});
+    targets.add({'name':'Monthly','target':this.items[0]['monthlyTarget'],'value':monthEarn});
+
     this.setState(() {
       visible=true;
     });
@@ -80,14 +94,11 @@ class _HomeState extends State<Home> {
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
-              leading: IconButton(
-                icon: Icon(
+              leading: Icon(
                   Icons.book_sharp,
                   color: Colors.redAccent,
                   size: 30.0,
                 ),
-                onPressed: (){},
-              ),
               title: Text(
                 'BizManager',
                 style: GoogleFonts.openSans(
@@ -97,6 +108,13 @@ class _HomeState extends State<Home> {
               titleSpacing: 2.0,
               backgroundColor: Colors.white,
               actions: [
+                IconButton(
+                  icon:Icon(
+                    Icons.refresh,
+                    color: Colors.redAccent[400],
+                  ),
+                  onPressed: ()async{await this.getBusinessData();},
+                ),
                 IconButton(
                   icon:Icon(
                     Icons.add,
@@ -128,7 +146,7 @@ class _HomeState extends State<Home> {
                           Container(
                             child: TextButton(
                               onPressed: ()async {
-                                if(this.empty!=1) {
+                                if(this.current!=0) {
                                   dynamic ret = await Navigator.pushNamed(
                                       context, '/selectbiz');
                                   print(ret);
@@ -162,7 +180,47 @@ class _HomeState extends State<Home> {
                             ),
                             margin: EdgeInsets.symmetric(vertical: 0,horizontal: 10.0),
                           ),
-                          // Divider(color: Colors.deepPurpleAccent,height: 10.0),
+                          Visibility(
+                            child: TextButton.icon(
+                              icon: Icon(
+                                Icons.add,
+                                color: Colors.white,
+                              ),
+                              label:Text(
+                                'Create a order',
+                                style: GoogleFonts.openSans(
+                                    color: Colors.white
+                                )
+                              ),
+                              style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all<Color>(Colors.deepPurpleAccent),
+                                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.symmetric(vertical: 0.0,horizontal: 10.0))
+                              ),
+                              onPressed: ()async{
+                                dynamic ret =await Navigator.pushNamed(context, '/createOrder',arguments: current);
+                                if(ret!=null){
+                                  this.setState(() {
+                                    if (ret['orders']['completed'] == 1)
+                                      this.recentOrders.add(ret['orders']);
+                                    else
+                                      this.pendingOrders.add(ret['orders']);
+                                    if (ret['payments']['hasPaid'] == 0)
+                                      this.pendingPayments.add(ret['payments']);
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Order added',
+                                        style: GoogleFonts.openSans(),
+                                      ),
+                                      duration: Duration(milliseconds: 800),
+                                    ),
+                                  );
+                                }
+                                },
+                              ),
+                            visible: this.visible,
+                            ),
                         ],
                       ),
                       margin: EdgeInsets.symmetric(vertical: 10.0,horizontal: 5.0),
@@ -193,6 +251,15 @@ class _HomeState extends State<Home> {
                                       this.name = ret['name'];
                                       this.current = ret['id'];
                                     });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Business added',
+                                          style: GoogleFonts.openSans(),
+                                        ),
+                                        duration: Duration(milliseconds: 800),
+                                      ),
+                                    );
                                     this.getBusinessData();
                                   }
                                 }
@@ -230,7 +297,7 @@ class _HomeState extends State<Home> {
               sliver: SliverList(
               delegate: SliverChildListDelegate(
                 [
-                  SizedBox(height: 10.0,),
+                  SizedBox(height: 20.0,),
                   Container(
                     child: Text(
                       'Pending Orders',
@@ -249,7 +316,7 @@ class _HomeState extends State<Home> {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                   (BuildContext context,int index){
-                    if(this.orders.length==0){
+                    if(this.pendingOrders.length==0 && this.visible){
                       return Container(
                         child: Center(
                           child: Text(
@@ -275,7 +342,7 @@ class _HomeState extends State<Home> {
                         (BuildContext context,int index){
                       return this.orderObject(index);
                     },
-                    childCount: this.orders.length
+                    childCount: this.pendingOrders.length
                 ),
               ),
             ),
@@ -284,37 +351,7 @@ class _HomeState extends State<Home> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    Center(
-                      child: TextButton.icon(
-                        icon: Icon(
-                          Icons.add,
-                          color: Colors.white,
-                        ),
-                        label:Text(
-                          'Create a order',
-                          style: GoogleFonts.openSans(
-                            color: Colors.white
-                          ),
-                        ),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
-                          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.symmetric(vertical: 0.0,horizontal: 10.0))
-                        ),
-                        onPressed: (){
-                          Navigator.pushNamed(context, '/createOrder');
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 10.0,)
-                  ]
-                ),
-              ),
-            ),
-            SliverVisibility(
-              visible: this.visible,
-              sliver: SliverList(
-                delegate: SliverChildListDelegate(
-                  [
+                    SizedBox(height: 20.0,),
                     Container(
                       child: Text(
                         'Payments due',
@@ -333,7 +370,7 @@ class _HomeState extends State<Home> {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                   (BuildContext context,int index){
-                    if(this.payments.length==0){
+                    if(this.pendingPayments.length==0 && this.visible){
                       return Container(
                         child: Center(
                           child: Text(
@@ -357,12 +394,64 @@ class _HomeState extends State<Home> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                         (BuildContext context,int index){
-                      return this.paymentObject(index);
-                    },
-                    childCount: this.payments.length
+                          print(this.pendingPayments.length);print(408);
+                          return this.paymentObject(index);
+                          },
+                    childCount: this.pendingPayments.length
                 ),
               ),
-            )
+            ),
+            SliverVisibility(
+              visible: this.visible,
+              sliver: SliverList(
+                delegate: SliverChildListDelegate(
+                    [
+                      SizedBox(height: 20.0,),
+                      Container(
+                        child: Text(
+                          'Recent orders',
+                          style: GoogleFonts.openSans(
+                              color: Colors.blueGrey[800],
+                              fontSize: 20.0
+                          ),
+                        ),
+                        margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 10.0),
+                      ),
+                      SizedBox(height: 10.0)
+                    ]
+                ),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                  (BuildContext context,int index){
+                    return recentOrdersObject(index);
+                  },
+                childCount: recentOrders.length
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                      (BuildContext context,int index){
+                    if(this.recentOrders.length==0 && this.visible){
+                      return Container(
+                        child: Center(
+                          child: Text(
+                            'No recent orders',
+                            style: GoogleFonts.openSans(
+                                fontSize: 15.0,
+                                color: Colors.blueGrey[800]
+                            ),
+                          ),
+                        ),
+                        margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+                      );
+                    }
+                    else return null;
+                  },
+                  childCount: 1
+              ),
+            ),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -405,14 +494,25 @@ class _HomeState extends State<Home> {
   }
 
   Container renderProgress(index) {
-    dynamic percent=0;String txt='0.00 %';
-    if(this.targets[index]['target']==0){
-
+    dynamic percent=0.0;String txt='0.00 %';
+    if(this.targets[index]['target']>0){
+      percent=this.targets[index]['value']/this.targets[index]['target'];
+      txt=((this.targets[index]['value']/this.targets[index]['target'])*100).toStringAsFixed(2);
+      if(percent>1.0){
+        percent=1.0;
+      }
     }
     return Container(
         child: CircularPercentIndicator(
+          header: Text(
+            this.targets[index]['value'].toString()+'/'+this.targets[index]['target'].toString(),
+            style: GoogleFonts.openSans(
+              color: Colors.white,
+              fontSize: 20.0
+            ),
+          ),
           percent: percent,
-          radius: 100.0,
+          radius: 120.0,
           backgroundColor: Colors.orange[50],
           fillColor: Colors.deepPurpleAccent,
           progressColor: Colors.orangeAccent,
@@ -427,7 +527,7 @@ class _HomeState extends State<Home> {
           animationDuration: 700,
           footer: Container(
             child: Text(
-              this.targets[index]['name'],
+              this.targets[index]['name']+' Earnings',
               style: GoogleFonts.openSans(
                 fontSize: 20.0,
                 color: Colors.orange[50]
@@ -438,21 +538,21 @@ class _HomeState extends State<Home> {
         ),
     );
   }
-
   Container orderObject(index){
     return Container(
       child: ListTile(
         onTap: (){
-          Navigator.pushNamed(context, '/orderInfoPage',arguments: this.orders[index]);
+          Navigator.pushNamed(context, '/orderInfoPage',arguments: this.pendingOrders[index]);
         },
         leading: Icon(
           Icons.book_sharp,
           color: Colors.white,
         ),
         title: Text(
-          this.orders[index]['name'],
+          this.pendingOrders[index]['name'],
           style: GoogleFonts.openSans(
-            color: Colors.white
+            color: Colors.white,
+            fontSize: 20.0
           ),
         ),
         subtitle: Text(
@@ -462,7 +562,7 @@ class _HomeState extends State<Home> {
           ),
         ),
         trailing: Text(
-          this.orders[index]['price'],
+          this.pendingOrders[index]['price'].toString(),
           style: GoogleFonts.openSans(
             color: Colors.white
           ),
@@ -471,37 +571,43 @@ class _HomeState extends State<Home> {
 
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5.0),
-        color: Colors.redAccent
+        color: Colors.redAccent[400]
       ),
-      margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 2.0),
+      margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 4.0),
       padding: EdgeInsets.all(5.0),
     );
   }
   Container paymentObject(index){
-    DateTime d = DateTime.parse(this.payments[index]['dueDate']);
+    String Due='';
+    if(this.pendingPayments[index]['dueDate']=='')
+      Due='no due date';
+    else {
+      DateTime d = DateTime.parse(this.pendingPayments[index]['dueDate']);
+      Due='due on '+ d.day.toString()+' '+this.months[d.month]+ ' '+d.year.toString().substring(0,2);
+    }
     return Container(
       child: ListTile(
         onTap: (){
-          Navigator.pushNamed(context, '/paymentInfoPage',arguments: this.payments[index]);
+          Navigator.pushNamed(context, '/paymentInfoPage',arguments: this.pendingPayments[index]);
         },
         leading: Icon(
           Icons.book_sharp,
           color: Colors.white,
         ),
         title: Text(
-          this.payments[index]['name'],
+          this.pendingPayments[index]['name'],
           style: GoogleFonts.openSans(
               color: Colors.white
           ),
         ),
         subtitle: Text(
-          'due on '+ d.day.toString()+' '+this.months[d.month]+ ' '+d.year.toString().substring(0,2),
+          Due,
           style: GoogleFonts.openSans(
               color: Colors.white
           ),
         ),
         trailing: Text(
-          this.payments[index]['dueAmount'],
+          this.pendingPayments[index]['dueAmount'].toString(),
           style: GoogleFonts.openSans(
               color: Colors.white
           ),
@@ -509,20 +615,47 @@ class _HomeState extends State<Home> {
       ),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5.0),
-          color: Colors.redAccent
+          color: Colors.orangeAccent
       ),
-      margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 2.0),
+      margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 4.0),
       padding: EdgeInsets.all(5.0),
     );
   }
 
-  Container renderBusinessModel(){
+  Container recentOrdersObject(int index){
     return Container(
-        child: Column(
-          children: [
-
-          ],
+      child: ListTile(
+        onTap: (){
+          Navigator.pushNamed(context, '/orderInfoPage',arguments: this.recentOrders[index]);
+        },
+        leading: Icon(
+          Icons.book,
+          color: Colors.white,
         ),
+        title: Text(
+          this.recentOrders[index]['name'],
+          style: GoogleFonts.openSans(
+            color: Colors.white
+          ),
+        ),
+        subtitle: Text(
+          'Click to view',
+          style: GoogleFonts.openSans(
+            color: Colors.white
+          ),
+        ),
+        trailing: Text(
+          this.recentOrders[index]['price'].toString(),
+          style: GoogleFonts.openSans(
+            color: Colors.white
+          ),
+        ),
+      ),
+      margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 4.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5.0),
+        color: Colors.deepPurpleAccent
+      ),
     );
   }
 }
