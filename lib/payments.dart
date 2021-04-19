@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'database.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -19,7 +20,7 @@ class _PaymentsState extends State<Payments> {
   TextEditingController date=TextEditingController();
   TextEditingController month=TextEditingController();
   TextEditingController year=TextEditingController();
-  bool visible=false;int bid;
+  bool visible=false;int bid;String Date='';
   Future<bool> initData()async{
     items=[];
     bid = ModalRoute.of(context).settings.arguments;
@@ -147,107 +148,138 @@ class _PaymentsState extends State<Payments> {
                   ]
               ),
             ),
-            // SliverList(
-            //   delegate: SliverChildListDelegate(
-            //       [
-            //         Container(
-            //           child: Column(
-            //             crossAxisAlignment: CrossAxisAlignment.start,
-            //             children: [
-            //               Row(
-            //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //                 children: [
-            //                   Text(
-            //                     'Search by date',
-            //                     style: GoogleFonts.openSans(
-            //                         fontSize: 15
-            //                     ),
-            //                   ),
-            //                 ],
-            //               ),
-            //               SizedBox(height: 5,),
-            //               Row(
-            //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //                 children: [
-            //                   TextButton.icon(
-            //                     label: Text(
-            //                       'Search',
-            //                       style: GoogleFonts.openSans(
-            //                           fontWeight: FontWeight.bold,
-            //                           color: Colors.white
-            //                       ),
-            //                     ),
-            //                     icon: Icon(
-            //                       Icons.search,
-            //                       color: Colors.blueGrey[700],
-            //                     ),
-            //                     onPressed: (){
-            //                       //TODO
-            //                     },
-            //                     style: ButtonStyle(
-            //                         backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent[400])
-            //                     ),
-            //                   ),
-            //                   Row(
-            //                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //                     children: [
-            //                       Container(
-            //                         child: TextField(
-            //                           controller: date,
-            //                           decoration: InputDecoration(
-            //                               border: OutlineInputBorder(),
-            //                               hintText: 'Date',
-            //                               hintStyle: GoogleFonts.openSans(),
-            //                               contentPadding: EdgeInsets.symmetric(vertical: 2,horizontal: 10)
-            //                           ),
-            //                           cursorHeight: 20,
-            //                         ),
-            //                         width: 70,
-            //                         height: 40,
-            //                         margin: EdgeInsets.symmetric(vertical: 0,horizontal: 3),
-            //                       ),
-            //                       Container(
-            //                         child: TextField(
-            //                           controller: month,
-            //                           decoration: InputDecoration(
-            //                               border: OutlineInputBorder(),
-            //                               hintText: 'Month',
-            //                               hintStyle: GoogleFonts.openSans(),
-            //                               contentPadding: EdgeInsets.symmetric(vertical: 2,horizontal: 10)
-            //                           ),
-            //                           textAlign: TextAlign.center,
-            //                           cursorHeight: 20,
-            //                         ),
-            //                         width: 70,
-            //                         height: 40,
-            //                         margin: EdgeInsets.symmetric(vertical: 0,horizontal: 3),
-            //                       ),
-            //                       Container(
-            //                         child: TextField(
-            //                           controller: year,
-            //                           decoration: InputDecoration(
-            //                               border: OutlineInputBorder(),
-            //                               hintText: 'Year',
-            //                               hintStyle: GoogleFonts.openSans(),
-            //                               contentPadding: EdgeInsets.symmetric(vertical: 2,horizontal: 10)
-            //                           ),
-            //                           cursorHeight: 20,
-            //                         ),
-            //                         width: 70,
-            //                         height: 40,
-            //                         margin: EdgeInsets.symmetric(vertical: 0,horizontal: 3),
-            //                       )
-            //                     ],
-            //                   )
-            //                 ],
-            //               )
-            //             ],
-            //           ),
-            //           margin: EdgeInsets.symmetric(vertical: 5,horizontal: 10),
-            //         )
-            //       ]
-            //   ),
-            // ),
+            SliverList(
+              delegate: SliverChildListDelegate(
+                  [
+                    Container(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Search by date',
+                                style: GoogleFonts.openSans(
+                                    fontSize: 15
+                                ),
+                              ),
+                              Text(
+                                Date,
+                                style: GoogleFonts.openSans(
+                                    fontSize: 15
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextButton.icon(
+                                label: Text(
+                                  'Search',
+                                  style: GoogleFonts.openSans(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white
+                                  ),
+                                ),
+                                icon: Icon(
+                                  Icons.search,
+                                  color: Colors.blueGrey[700],
+                                ),
+                                onPressed: ()async{
+                                  //TODO
+                                  dynamic date1 = date.text;
+                                  dynamic month1 = month.text;
+                                  dynamic year1 = year.text;
+
+                                  dynamic ret = await db.searchDate(bid, 'payments', date1, month1, year1);
+                                  date1 = date1.length==0? '*' : date1;
+                                  month1 = month1.length==0? '*' : month1;
+                                  year1 = year1.length==0? '*' : year1;
+                                  this.setState(() {
+                                    items=ret;
+                                    initData();
+                                    Date=date1+'/'+month1+'/'+year1;
+                                  });
+                                },
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent[400])
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Container(
+                                    child: TextField(
+                                      controller: date,
+                                      decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          hintText: 'Date',
+                                          hintStyle: GoogleFonts.openSans(),
+                                          contentPadding: EdgeInsets.symmetric(vertical: 2,horizontal: 10)
+                                      ),
+                                      cursorHeight: 20,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                    ),
+                                    width: 70,
+                                    height: 40,
+                                    margin: EdgeInsets.symmetric(vertical: 0,horizontal: 3),
+                                  ),
+                                  Container(
+                                    child: TextField(
+                                      controller: month,
+                                      decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          hintText: 'Month',
+                                          hintStyle: GoogleFonts.openSans(),
+                                          contentPadding: EdgeInsets.symmetric(vertical: 2,horizontal: 10)
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      cursorHeight: 20,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                    ),
+                                    width: 70,
+                                    height: 40,
+                                    margin: EdgeInsets.symmetric(vertical: 0,horizontal: 3),
+                                  ),
+                                  Container(
+                                    child: TextField(
+                                      controller: year,
+                                      decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          hintText: 'Year',
+                                          hintStyle: GoogleFonts.openSans(),
+                                          contentPadding: EdgeInsets.symmetric(vertical: 2,horizontal: 10)
+                                      ),
+                                      cursorHeight: 20,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                    ),
+                                    width: 70,
+                                    height: 40,
+                                    margin: EdgeInsets.symmetric(vertical: 0,horizontal: 3),
+                                  )
+                                ],
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                      margin: EdgeInsets.symmetric(vertical: 5,horizontal: 10),
+                    )
+                  ]
+              ),
+            ),
             SliverList(
               delegate: SliverChildListDelegate(
                 [

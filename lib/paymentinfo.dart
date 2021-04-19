@@ -258,7 +258,6 @@ class _PaymentInfoState extends State<PaymentInfo> {
                     );
                   }
                   else{
-                    print(this.items);print(260);
                     int hasPaid=0;
                     this.items['dueAmount']=this.items['dueAmount']-price;
                     if(this.items['dueAmount']==0){
@@ -266,7 +265,6 @@ class _PaymentInfoState extends State<PaymentInfo> {
                       this.items['hasPaid']=hasPaid;
                       this.items['paidDate']=DateTime.now().toString();
                     }
-                    print(this.items);print(267);
                     await db.updatePayment(this.items['bid'], this.items['id'], this.items['dueAmount'],this.items['paidDate'],hasPaid);
                     await db.updateTotal(this.items['bid'],price);
                     ScaffoldMessenger.of(context).showSnackBar(

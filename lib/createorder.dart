@@ -250,7 +250,6 @@ class _CreateOrderState extends State<CreateOrder> {
                               complete=1;
                             }
                             int custid=rnd.nextInt(100000);
-                            print(name);print(desc);print(price);print(paymentDueDate);print(paidDate);print(hasPaid);print(complete);print(completedDate);print(cust);print(228);
                             await db.addOrder(id, pid, bid, name, desc, price, paymentDueDate, paidDate, dueAmt,hasPaid,complete,completedDate,cust,custid);
                             if(hasPaid==1) {
                               await db.updatePayment(bid, pid, dueAmt, paidDate, hasPaid);

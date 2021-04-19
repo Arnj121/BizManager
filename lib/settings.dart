@@ -515,7 +515,6 @@ class _SettingsState extends State<Settings> {
                                     await db.setLimit(this.items['id'], target, 'monthly');
                                     this.setState(() {
                                       monthlyTarget=target;
-                                      print(monthlyTarget);
                                     });
                                     ScaffoldMessenger.of(context)
                                         .showSnackBar(SnackBar(

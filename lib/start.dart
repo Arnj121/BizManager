@@ -11,7 +11,6 @@ class _LoadingState extends State<Start> {
   List<Map<String,dynamic>> items=[];
   Future<void> initData()async{
     items = await db.getBusiness();
-    print(items);print(19);
     if(items.length>0){
       Navigator.pushReplacementNamed(context, '/home',arguments: items[0]);
     }
@@ -23,7 +22,6 @@ class _LoadingState extends State<Start> {
 
   @override
   Widget build(BuildContext context) {
-    print(21);
     return SafeArea(
         child: Scaffold(
             backgroundColor: Colors.white,
@@ -56,8 +54,6 @@ class _LoadingState extends State<Start> {
                     ),
                     onPressed: () async {
                       dynamic ret = await Navigator.pushNamed(context, '/addnew');
-                      print(ret);
-                      print(176);
                       if (ret != null) {
                         Navigator.pushReplacementNamed(context, '/home',arguments: ret);
                       }

@@ -11,7 +11,6 @@ class _LoadingState extends State<Loading> {
   List<Map<String,dynamic>> items=[];
   Future<void> initData()async{
     items = await db.getBusiness();
-    print(items);print(19);
     if(items.length==0)
       Navigator.pushReplacementNamed(context, '/start');
     else

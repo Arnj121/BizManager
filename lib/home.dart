@@ -63,7 +63,6 @@ class _HomeState extends State<Home> {
 
     targets.add({'name':'Daily','target':currentData['dailyTarget'],'value':todayEarn});
     targets.add({'name':'Monthly','target':currentData['monthlyTarget'],'value':monthEarn});
-    print(targets);
     this.setState(() {
       targets=targets;
       name=name;

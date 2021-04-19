@@ -113,7 +113,6 @@ class _AddBusinessState extends State<AddBusiness> {
                             }
                             else {
                               int id = rnd.nextInt(100000);
-                              print(id);print(name);print(87);
                               await db.addBusiness(id, name,0,0);
                               Navigator.pop(context,{'id':id,'name':name});
                             }

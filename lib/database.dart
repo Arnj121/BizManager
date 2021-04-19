@@ -194,7 +194,6 @@ class DatabaseHelper{
   Future<List<Map<String,dynamic>>> getTargets(int id) async{
     Database db = await database;
     List<Map<String,dynamic>> res=await db.query('business',where: 'id=?',whereArgs: [id]);
-    print(res);print('targets');
     return res;
   }
 
@@ -225,6 +224,35 @@ class DatabaseHelper{
   Future<dynamic> search(table,int bid,String text)async{
     Database db = await database;
     dynamic l =await db.query(table,where: 'bid=? and name like ?',whereArgs: [bid,'%$text%']);
+    return l;
+  }
+
+  Future<dynamic> searchDate(bid,table,date,month,year) async{
+    Database db = await database;String pattern='';
+    if(year.length==0)
+      pattern+='____';
+    else
+      pattern+=year.toString();
+    pattern+='-';
+    if(month.length==0)
+      pattern+='__';
+    else{
+      month = month.toString().length==1 ?'0'+month.toString() :month.toString();
+      pattern+=month;
+    }
+    pattern+='-';
+    if(date.length==0)
+      pattern+='__';
+    else{
+      date = date.toString().length==1 ?'0'+date.toString() :date.toString();
+      pattern+=date;
+    }
+    pattern+='%';
+    dynamic l;
+    if(table=='orders')
+      l =await db.query(table,where: 'bid=? and date like ?',whereArgs: [bid,pattern]);
+    else
+      l = await db.query(table,where:'bid=? and paidDate like ?',whereArgs: [bid,pattern]);
     return l;
   }
 
