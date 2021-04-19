@@ -87,7 +87,6 @@ class DatabaseHelper{
       'mtimes':0,
       'dtimes':0,
     });
-    print(await db.query('business'));print(101);
   }
   Future<void> addOrder(int id,int pid,int bid,String name,String desc,int price,String dueDate,String paidDate,int dueAmount,int hasPaid,int complete,String completedDate,String custname,int custid) async{
     Database db= await database;
@@ -95,7 +94,6 @@ class DatabaseHelper{
     await db.insert('orders', {'id':id,'pid':pid,'bid':bid,'name':name,'description':desc,'price':price,'date':date,'completedDate':completedDate,
       'completed':complete,'customerName':custname,'customerId':custid});
     await db.insert('payments', {'id':pid,'oid':id,'bid':bid,'name':name,'date':date,'dueDate':dueDate,'paidDate':paidDate,'amount':price,'dueAmount':dueAmount,'hasPaid':hasPaid});
-    print(await db.query('orders'));print(await db.query('payments'));print(110);
   }
 
   // Future<void> addPayment(int id,String name,int price,String date,String dueDate,String paidDate,int dueAmount,int hasPaid)async{
@@ -103,24 +101,34 @@ class DatabaseHelper{
   //   await db.insert('payments', {'id':id,'name':name,'date':date,'dueDate':dueDate,'paidData':paidDate,'amount':price,'dueAmount':dueAmount,'hasPaid':hasPaid});
   // }
 
-  Future<List<Map<String,dynamic>>> getOrders(int bid,int id) async{
+  Future<List<Map<String,dynamic>>> getOrders(int bid,int id,{column=0,order=0}) async{
     Database db= await database;
+    List<Map<String, dynamic>> res;
     if(id==0){
-      List<Map<String, dynamic>> res = await db.query('orders',where: 'bid=?',whereArgs: [bid]);
-      // print(res);print('getOrders');
+      if(column==0 && order==0)
+        res = await db.query('orders',where: 'bid=?',whereArgs: [bid]);
+      else
+        res = await db.query('orders',where: 'bid=? order by $column $order',whereArgs: [bid]);
       return res;
     }
     else {
-      List<Map<String, dynamic>> res = await db.query('orders',where: 'bid=? and id =?',whereArgs: [bid,id]);
-      // print(res);print('getORders');
+      res = await db.query('orders',where: 'bid=? and id =?',whereArgs: [bid,id]);
       return res;
     }
+  }
+
+  Future<void> deleteOrders(int id,bid)async{
+    Database db= await database;
+    dynamic t = await db.query('payments',where: 'oid=? and bid=?',whereArgs: [id,bid]);
+    t = t[0]['amount']-t[0]['dueAmount'];
+    await db.delete('orders',where:'id=? and bid=?',whereArgs:[id,bid]);
+    await db.delete('payments',where:'oid=? and bid=?',whereArgs:[id,bid]);
+    await this.updateTotal(bid, -t);
   }
 
   Future<int> getCompletedOrders(int bid,int completed)async{
     Database db= await database;
     dynamic temp = await db.query('orders',where: 'bid=? and completed=?',whereArgs: [bid,completed]);
-    // print(temp.length);print('completedorders');
     return temp.length;
   }
 
@@ -128,7 +136,6 @@ class DatabaseHelper{
   Future<List<Map<String,dynamic>>> getRecentOrders(int bid) async{
     Database db= await database;
     List<Map<String, dynamic>> res = await db.query('orders',where: 'bid=? and completed=? order by date desc limit 5',whereArgs: [bid,1]);
-    // print(res);print('getrecentorders');
     return res;
   }
 
@@ -136,25 +143,25 @@ class DatabaseHelper{
   Future<List<Map<String,dynamic>>> getPendingOrders(int bid) async{
     Database db= await database;
     List<Map<String, dynamic>> res = await db.query('orders',where:'bid=? and completed=? limit 5',whereArgs:[bid,0]);
-    // print(res);print('getpendingorders');
     return res;
   }
 
-  Future<List<Map<String,dynamic>>> getPayments(int bid,int id,int oid) async{
+  Future<List<Map<String,dynamic>>> getPayments(int bid,int id,int oid,{order=0,column=0}) async{
     Database db= await database;
+    List<Map<String, dynamic>> res=[];
     if(id==0 && oid==0){
-      List<Map<String, dynamic>> res = await db.query('payments',where: 'bid=?',whereArgs: [bid]);
-      // print(res);print('getpayments');
+      if(order==0 && column==0)
+        res = await db.query('payments',where: 'bid=?',whereArgs: [bid]);
+      else
+        res = await db.query('payments',where: 'bid=? order by $column $order',whereArgs: [bid]);
       return res;
     }
     else if(id!=0){
-      List<Map<String, dynamic>> res = await db.query('payments',where: 'id=? and bid=?',whereArgs: [id,bid]);
-      // print(res);print('getpayments2');
+      res = await db.query('payments',where: 'id=? and bid=?',whereArgs: [id,bid]);
       return res;
     }
     else if(oid!=0){
       List<Map<String, dynamic>> res = await db.query('payments',where: 'oid=? and bid=?',whereArgs: [oid,bid]);
-      // print(res);print('getpayments3');
       return res;
     }
   }
@@ -162,7 +169,6 @@ class DatabaseHelper{
   Future<int> getCompletedPayments(int bid,int completed)async{
     Database db= await database;
     dynamic l = await db.query('payments',where:'bid=? and hasPaid=?',whereArgs: [bid,completed]);
-    // print(l.length);print('completedpayments');
     return l.length;
   }
 
@@ -170,28 +176,25 @@ class DatabaseHelper{
     Database db= await database;
     DateTime d = DateTime.now();
     List<Map<String, dynamic>> res = await db.query('payments',columns: ['amount'],where: 'bid=? and hasPaid=? and date like ?-?-?',whereArgs: [bid,1,'${d.year}','%${d.month}','%${d.day}%']);
-    // print(res);print('gettodaypayments');
     return res;
   }
 
   Future<List<Map<String,dynamic>>> getPendingPayments(int bid) async{
     Database db= await database;
     List<Map<String, dynamic>> res = await db.query('payments',where: 'bid=? and hasPaid=? limit 5',whereArgs: [bid,0]);
-    // print(res);print('getpendingpaments');
     return res;
   }
 
   Future<List<Map<String,dynamic>>> getBusiness() async{
     Database db = await database;
     List<Map<String,dynamic>> res=await db.query('business');
-    print(res);print('getbusiness');
     return res;
   }
 
   Future<List<Map<String,dynamic>>> getTargets(int id) async{
     Database db = await database;
     List<Map<String,dynamic>> res=await db.query('business',where: 'id=?',whereArgs: [id]);
-    print(res);print('gettargets');
+    print(res);print('targets');
     return res;
   }
 
@@ -200,7 +203,6 @@ class DatabaseHelper{
     Database db = await database;
     db.update('payments', {'dueAmount':dueamt,'hasPaid':hasPaid,'paidDate':paidDate},
     where: 'bid=? and id=?',whereArgs: [bid,id]);
-    print(await db.query('payments',where: 'bid=? and id=?',whereArgs: [bid,id]));
   }
 
   Future<void> updateOrder(int bid,int id,int completed,String date)async{
@@ -211,15 +213,19 @@ class DatabaseHelper{
   Future<void> setLimit(int id,int target,String type) async{
     Database db = await database;
     await db.update('business', {type+'Target':target},where: 'id=?',whereArgs: [id]);
-    print(await db.query('business'));print(224);
   }
 
   Future<void> updateTotal(int id,int incr) async{
     Database db = await database;
     dynamic t = await db.query('business',where: 'id=?',whereArgs: [id]);
     t = t[0]['totalMoney'];
-    print(t);print('total');
     await db.update('business', {'totalMoney':incr+t},where: 'id=?',whereArgs: [id]);
+  }
+
+  Future<dynamic> search(table,int bid,String text)async{
+    Database db = await database;
+    dynamic l =await db.query(table,where: 'bid=? and name like ?',whereArgs: [bid,'%$text%']);
+    return l;
   }
 
 }

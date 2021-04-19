@@ -28,10 +28,9 @@ class _HomeState extends State<Home> {
   int current=0;String name='New';
 
   Future<bool> getBusinessData({int m=0})async{
-    dynamic temp;print(m);
+    dynamic temp;
     if(m==0) {
       temp = ModalRoute.of(context).settings.arguments;
-      print(temp);print('temp');
       current = temp['id'];name = temp['name'];
     }
     targets = [];
@@ -64,7 +63,7 @@ class _HomeState extends State<Home> {
 
     targets.add({'name':'Daily','target':currentData['dailyTarget'],'value':todayEarn});
     targets.add({'name':'Monthly','target':currentData['monthlyTarget'],'value':monthEarn});
-
+    print(targets);
     this.setState(() {
       targets=targets;
       name=name;
@@ -135,19 +134,15 @@ class _HomeState extends State<Home> {
                   Center(
                     child: Column(
                       children: [
-                        Container(
+                        SizedBox(height: 30,),
+                        CircleAvatar(
                           child: Icon(
                             Icons.business,
                             color: Colors.white,
                             size: 50.0,
                           ),
-                          margin: EdgeInsets.all(10),
-                          padding: EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(
-                                  100.0),
-                              color: Colors.deepPurpleAccent
-                          ),
+                          maxRadius: 40,
+                          backgroundColor: Colors.deepPurpleAccent,
                         ),
                         Text(
                           this.name,
@@ -273,12 +268,29 @@ class _HomeState extends State<Home> {
                     [
                       SizedBox(height: 20.0,),
                       Container(
-                        child: Text(
-                          'Pending Orders',
-                          style: GoogleFonts.openSans(
-                              color: Colors.blueGrey[800],
-                              fontSize: 20.0
-                          ),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Pending Orders',
+                              style: GoogleFonts.openSans(
+                                  color: Colors.blueGrey[800],
+                                  fontSize: 20.0
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            CircleAvatar(
+                              child: Text(
+                                this.pendingOrders.length.toString(),
+                                style: GoogleFonts.openSans(
+                                    color: Colors.white,
+                                    fontSize: 12
+                                ),
+                              ),
+                              maxRadius: 15,
+                              backgroundColor: Colors.redAccent[400],
+                            )
+
+                          ],
                         ),
                         margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 10.0),
                       ),
@@ -305,12 +317,29 @@ class _HomeState extends State<Home> {
                     [
                       SizedBox(height: 20.0,),
                       Container(
-                        child: Text(
-                          'Payments due',
-                          style: GoogleFonts.openSans(
-                              color: Colors.blueGrey[800],
-                              fontSize: 20.0
-                          ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Payments due',
+                              style: GoogleFonts.openSans(
+                                  color: Colors.blueGrey[800],
+                                  fontSize: 20.0
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            CircleAvatar(
+                              child: Text(
+                                this.pendingPayments.length.toString(),
+                                style: GoogleFonts.openSans(
+                                    color: Colors.white,
+                                    fontSize: 12
+                                ),
+                              ),
+                              maxRadius: 15,
+                              backgroundColor: Colors.orangeAccent,
+                            )
+                          ],
                         ),
                         margin: EdgeInsets.symmetric(vertical: 5.0,horizontal: 10.0),
                       ),
@@ -400,7 +429,7 @@ class _HomeState extends State<Home> {
                       Icons.payments_sharp,
                       color: Colors.deepPurpleAccent,
                     ),
-                    onPressed: (){},
+                    onPressed: (){Navigator.pushNamed(context, '/payments',arguments: this.currentData['id']);},
                   ),
                   label: 'Payments'
               ),
@@ -489,12 +518,37 @@ class _HomeState extends State<Home> {
   Container orderObject(index){
     return Container(
       child: ListTile(
-        onTap: (){
-          Navigator.pushNamed(context, '/orderInfoPage',arguments: this.pendingOrders[index]);
-        },
-        leading: Icon(
-          Icons.book_sharp,
-          color: Colors.white,
+        onTap: ()async{
+          dynamic ret = await Navigator.pushNamed(context, '/orderInfoPage',arguments: this.pendingOrders[index]);
+          if(ret!=null){
+            if(ret['deleted']==1){
+                for(int i=0;i<this.pendingPayments.length;i++){
+                  if(this.pendingPayments[i]['id']==this.pendingOrders[index]['pid']){
+                    this.pendingPayments.removeAt(i);
+                    break;
+                  }
+                }
+                this.pendingOrders.removeAt(index);
+                this.setState(() {
+                  this.pendingPayments=pendingPayments;
+                  this.pendingOrders=pendingOrders;
+                });
+              }
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                'Order deleted',
+                style: GoogleFonts.openSans(),
+              ),
+              duration: Duration(milliseconds: 800),
+            ));
+          }
+          },
+        leading: CircleAvatar(
+          child: Icon(
+            Icons.book_sharp,
+            color: Colors.redAccent,
+          ),
+          backgroundColor: Colors.white,
         ),
         title: Text(
           this.pendingOrders[index]['name'],
@@ -538,9 +592,12 @@ class _HomeState extends State<Home> {
         onTap: (){
           Navigator.pushNamed(context, '/paymentInfoPage',arguments: this.pendingPayments[index]);
         },
-        leading: Icon(
-          Icons.book_sharp,
-          color: Colors.white,
+        leading: CircleAvatar(
+          child: Icon(
+            Icons.payment_sharp,
+            color: Colors.orangeAccent,
+          ),
+          backgroundColor: Colors.white,
         ),
         title: Text(
           this.pendingPayments[index]['name'],
@@ -573,12 +630,30 @@ class _HomeState extends State<Home> {
   Container recentOrdersObject(int index){
     return Container(
       child: ListTile(
-        onTap: (){
-          Navigator.pushNamed(context, '/orderInfoPage',arguments: this.recentOrders[index]);
+        onTap: () async{
+          dynamic ret =await Navigator.pushNamed(context, '/orderInfoPage',arguments: this.recentOrders[index]);
+          if(ret!=null){
+            if(ret['deleted']==1){
+              this.recentOrders.removeAt(index);
+              this.setState(() {
+                this.recentOrders=recentOrders;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                  'Order deleted',
+                  style: GoogleFonts.openSans(),
+                ),
+                duration: Duration(milliseconds: 800),
+              ));
+            }
+          }
         },
-        leading: Icon(
-          Icons.book,
-          color: Colors.white,
+        leading: CircleAvatar(
+          child: Icon(
+            Icons.book,
+            color: Colors.deepPurpleAccent,
+          ),
+          backgroundColor: Colors.white,
         ),
         title: Text(
           this.recentOrders[index]['name'],

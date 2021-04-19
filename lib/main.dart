@@ -10,6 +10,9 @@ import 'paymentinfo.dart';
 import 'settings.dart';
 import 'start.dart';
 import 'loading.dart';
+import 'payments.dart';
+import 'orders.dart';
+
 void main(){runApp(MyApp());}
 
 class MyApp extends StatefulWidget {
@@ -33,6 +36,8 @@ class _MyAppState extends State<MyApp> {
         '/settings':(context)=>Settings(),
         '/loading':(context)=>Loading(),
         '/start':(context)=>Start(),
+        '/payments':(context)=>Payments(),
+        '/orders':(context)=>Orders()
       },
     );
   }

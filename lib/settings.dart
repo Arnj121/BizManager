@@ -19,7 +19,7 @@ class _SettingsState extends State<Settings> {
   TextEditingController dcont = TextEditingController();
   TextEditingController mcont = TextEditingController();
 
-  Future<void> initData()async{
+  Future<bool> initData()async{
     bid =ModalRoute.of(context).settings.arguments;
     items = await db.getTargets(bid);items=items[0];
     dailyTarget =items['dailyTarget'];
@@ -34,6 +34,7 @@ class _SettingsState extends State<Settings> {
     dynamic temp =await db.getOrders(items['id'], 0);
     ordersrec=temp.length;
     this.setState(() {});
+    return true;
   }
 
   @override void initState() {
@@ -74,19 +75,14 @@ class _SettingsState extends State<Settings> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Container(
+                            CircleAvatar(
                               child: Icon(
                                 Icons.business,
                                 color: Colors.white,
-                                size: 40.0,
+                                size: 50.0,
                               ),
-                              margin: EdgeInsets.all(10),
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                      100.0),
-                                  color: Colors.deepPurpleAccent
-                              ),
+                              backgroundColor: Colors.deepPurpleAccent,
+                              maxRadius: 40,
                             ),
                             Text(
                               this.items['name'],
@@ -228,7 +224,7 @@ class _SettingsState extends State<Settings> {
                       ),
                       Center(
                         child:TextButton(
-                          onPressed: (){},
+                          onPressed: (){Navigator.pushNamed(context, '/orders',arguments:this.items['id']);},
                           child: Text(
                             'View orders',
                             style: GoogleFonts.openSans(),
@@ -237,7 +233,7 @@ class _SettingsState extends State<Settings> {
                       ),
                       Center(
                           child:TextButton(
-                            onPressed: (){},
+                            onPressed: (){Navigator.pushNamed(context, '/payments',arguments:this.items['id']);},
                             child: Text(
                               'View payments',
                               style: GoogleFonts.openSans(),

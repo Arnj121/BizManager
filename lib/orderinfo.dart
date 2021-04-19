@@ -18,7 +18,6 @@ class _OrderInfoState extends State<OrderInfo> {
   @override
   Widget build(BuildContext context) {
     items=ModalRoute.of(context).settings.arguments;
-    print(items);
     DateTime temp=DateTime.parse(items['date'].toString());
     date=temp.day.toString()+' '+months[temp.month]+' '+temp.year.toString();
     if(this.items['completedDate'].toString().length>0){
@@ -42,6 +41,12 @@ class _OrderInfoState extends State<OrderInfo> {
               color: Colors.deepPurpleAccent
             ),
           ),
+          actions: [
+            IconButton(icon: Icon(Icons.delete_outline_sharp,color: Colors.deepPurpleAccent,), onPressed: ()async{
+              await db.deleteOrders(this.items['id'], this.items['bid']);
+              Navigator.pop(context,{'deleted':1});
+            })
+          ],
         ),
         body: CustomScrollView(
           slivers: [
@@ -188,7 +193,8 @@ class _OrderInfoState extends State<OrderInfo> {
                           ),
                         ),
                         SizedBox(height: 20.0),
-                        OrderProcessor(this.items['completed'])
+                        OrderProcessor(this.items['completed']),
+                        SizedBox(height: 20.0),
                       ],
                     ),
                     margin: EdgeInsets.fromLTRB(30, 100, 30, 0),
