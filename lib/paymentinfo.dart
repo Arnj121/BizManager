@@ -13,7 +13,7 @@ class PaymentInfo extends StatefulWidget {
 class _PaymentInfoState extends State<PaymentInfo> {
 
   DatabaseHelper db=  DatabaseHelper.instance;
-  Map<String,dynamic> items={};
+  Map<dynamic,dynamic> items={};
   String date='',duedate='No due date',paiddate='Not paid';
   dynamic percent=0.0;
   TextEditingController controller  = TextEditingController();
@@ -268,6 +268,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                     }
                     print(this.items);print(267);
                     await db.updatePayment(this.items['bid'], this.items['id'], this.items['dueAmount'],this.items['paidDate'],hasPaid);
+                    await db.updateTotal(this.items['bid'],price);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(

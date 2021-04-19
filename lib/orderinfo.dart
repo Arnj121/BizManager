@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -17,7 +19,7 @@ class _OrderInfoState extends State<OrderInfo> {
   Widget build(BuildContext context) {
     items=ModalRoute.of(context).settings.arguments;
     print(items);
-    DateTime temp=DateTime.parse(items['date']);
+    DateTime temp=DateTime.parse(items['date'].toString());
     date=temp.day.toString()+' '+months[temp.month]+' '+temp.year.toString();
     if(this.items['completedDate'].toString().length>0){
       temp = DateTime.parse(this.items['completedDate'].toString());
@@ -181,7 +183,7 @@ class _OrderInfoState extends State<OrderInfo> {
                             ),
                             onPressed: ()async{
                               dynamic ret = await db.getPayments(this.items['bid'], this.items['pid'],0);
-                              Navigator.pushNamed(context, '/paymentInfoPage',arguments: ret[0]);
+                              Navigator.pushNamed(context, '/paymentInfoPage',arguments: Map.from(ret[0]));
                             },
                           ),
                         ),
