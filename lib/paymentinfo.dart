@@ -215,9 +215,9 @@ class _PaymentInfoState extends State<PaymentInfo> {
               child: TextField(
                 controller: controller,
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Received',
-                    labelStyle: GoogleFonts.openSans()
+                  border: OutlineInputBorder(),
+                  labelText: 'Received',
+                  labelStyle: GoogleFonts.openSans(),
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [

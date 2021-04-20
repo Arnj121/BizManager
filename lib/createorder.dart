@@ -294,11 +294,14 @@ class _CreateOrderState extends State<CreateOrder> {
               onPressed: DueDate,
             ),
             SizedBox(height: 10.0),
-            Text(
-              this.paymentdue,
-              style: GoogleFonts.openSans(
-                color: Colors.deepPurpleAccent,
-                fontSize: 20.0
+            Visibility(
+              visible: this.paymentdue.length==0? false:true,
+              child: Text(
+                this.paymentdue,
+                style: GoogleFonts.openSans(
+                  color: Colors.deepPurpleAccent,
+                  fontSize: 20.0
+                ),
               ),
             )
           ],

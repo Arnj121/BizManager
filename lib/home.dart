@@ -39,35 +39,55 @@ class _HomeState extends State<Home> {
     int todayEarn=0,monthEarn=0;
 
     temp = await db.getTargets(current);
-    currentData=temp[0];
-    temp = await db.getPendingOrders(current);
-    temp.forEach((e){this.pendingOrders.add(jsonDecode(jsonEncode(e)));});
+    if(temp.length==0){
+      Navigator.of(context).pushReplacementNamed('/loading');
+    }
+    else {
+      currentData = temp[0];
+      temp = await db.getPendingOrders(current);
+      temp.forEach((e) {
+        this.pendingOrders.add(jsonDecode(jsonEncode(e)));
+      });
 
-    temp = await db.getPendingPayments(current);
-    temp.forEach((e){this.pendingPayments.add(jsonDecode(jsonEncode(e)));});
+      temp = await db.getPendingPayments(current);
+      temp.forEach((e) {
+        this.pendingPayments.add(jsonDecode(jsonEncode(e)));
+      });
 
-    temp= await db.getRecentOrders(current);
-    temp.forEach((e){this.recentOrders.add(jsonDecode(jsonEncode(e)));});
+      temp = await db.getRecentOrders(current);
+      temp.forEach((e) {
+        this.recentOrders.add(jsonDecode(jsonEncode(e)));
+      });
 
-    DateTime d,tod = DateTime.now();
+      DateTime d, tod = DateTime.now();
 
-    total = await db.getPayments(current,0,0);
-    total.forEach((element){
-      d = DateTime.parse(element['date']);
-      if(d.month==tod.month && d.year == tod.year && element['hasPaid']==1){
-        monthEarn+=element['amount'];
-        if(d.day == tod.day)
-          todayEarn+=element['amount'];
-      }
-    });
+      total = await db.getPayments(current, 0, 0);
+      total.forEach((element) {
+        d = DateTime.parse(element['date']);
+        if (d.month == tod.month && d.year == tod.year &&
+            element['hasPaid'] == 1) {
+          monthEarn += element['amount'];
+          if (d.day == tod.day)
+            todayEarn += element['amount'];
+        }
+      });
 
-    targets.add({'name':'Daily','target':currentData['dailyTarget'],'value':todayEarn});
-    targets.add({'name':'Monthly','target':currentData['monthlyTarget'],'value':monthEarn});
-    this.setState(() {
-      targets=targets;
-      name=name;
-    });
-    return true;
+      targets.add({
+        'name': 'Daily',
+        'target': currentData['dailyTarget'],
+        'value': todayEarn
+      });
+      targets.add({
+        'name': 'Monthly',
+        'target': currentData['monthlyTarget'],
+        'value': monthEarn
+      });
+      this.setState(() {
+        targets = targets;
+        name = name;
+      });
+      return true;
+    }
   }
 
   @override void initState() {
@@ -84,6 +104,7 @@ class _HomeState extends State<Home> {
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
+              pinned: true,
               leading: Icon(
                 Icons.book_sharp,
                 color: Colors.redAccent,
@@ -104,12 +125,24 @@ class _HomeState extends State<Home> {
                     Icons.refresh,
                     color: Colors.redAccent[400],
                   ),
-                  onPressed: ()async{await this.getBusinessData(m:1);},
+                  onPressed: ()async{
+                    await this.getBusinessData(m:1);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Refreshed',
+                          style: GoogleFonts.openSans(),
+                        ),
+                        duration: Duration(milliseconds: 800),
+                      )
+                    );
+                    },
                 ),
                 IconButton(
                   icon:Icon(
                     Icons.add,
                     color: Colors.redAccent,
+                    size: 30,
                   ),
                   onPressed: ()async {
                     dynamic ret= await Navigator.pushNamed(context, '/addnew');
@@ -143,6 +176,7 @@ class _HomeState extends State<Home> {
                           maxRadius: 40,
                           backgroundColor: Colors.deepPurpleAccent,
                         ),
+                        SizedBox(height: 10,),
                         Text(
                           this.name,
                           style: GoogleFonts.openSans(
@@ -150,116 +184,62 @@ class _HomeState extends State<Home> {
                               color: Colors.deepPurpleAccent
                           ),
                         ),
+                        SizedBox(height: 10,),
+                        Container(
+                          child: TextButton(
+                            onPressed: ()async {
+                              if(this.current!=0) {
+                                dynamic ret = await Navigator.pushNamed(
+                                    context, '/selectbiz');
+                                if (ret != null) {
+                                  // this.setState(() {
+                                  this.name = ret['name'];
+                                  this.current = ret['id'];
+                                  // });
+                                  this.getBusinessData(m:1);
+                                }
+                              }
+                              else
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                    'No business available',
+                                    style: GoogleFonts.openSans(),
+                                  ),
+                                  duration: Duration(milliseconds: 1000),
+                                ));
+                            },
+                            child: Text(
+                              'Select',
+                              style: GoogleFonts.openSans(
+                                  color: Colors.white,
+                                  fontSize: 15.0
+                              ),
+                            ),
+                            style: ButtonStyle(
+                              padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.symmetric(vertical: 0,horizontal: 5.0)),
+                              backgroundColor: MaterialStateProperty.all<Color>(Colors.deepPurpleAccent),
+                            ),
+                          ),
+                          margin: EdgeInsets.symmetric(vertical: 0,horizontal: 10.0),
+                        ),
                       ],
                     ),
                   ),
-
                   SizedBox(height: 20.0,)
                 ]
               )
             ),
-            SliverList(
-                delegate: SliverChildBuilderDelegate(
-                        (BuildContext context,int index){
-                      return Container(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              child: TextButton(
-                                onPressed: ()async {
-                                  if(this.current!=0) {
-                                    dynamic ret = await Navigator.pushNamed(
-                                        context, '/selectbiz');
-                                    if (ret != null) {
-                                      // this.setState(() {
-                                        this.name = ret['name'];
-                                        this.current = ret['id'];
-                                      // });
-                                      this.getBusinessData(m:1);
-                                    }
-                                  }
-                                  else
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text(
-                                        'No business available',
-                                        style: GoogleFonts.openSans(),
-                                      ),
-                                      duration: Duration(milliseconds: 1000),
-                                    ));
-                                },
-                                child: Text(
-                                  'Select',
-                                  style: GoogleFonts.openSans(
-                                      color: Colors.white,
-                                      fontSize: 15.0
-                                  ),
-                                ),
-                                style: ButtonStyle(
-                                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.symmetric(vertical: 0,horizontal: 5.0)),
-                                  backgroundColor: MaterialStateProperty.all<Color>(Colors.deepPurpleAccent),
-                                ),
-                              ),
-                              margin: EdgeInsets.symmetric(vertical: 0,horizontal: 10.0),
-                            ),
-                           TextButton.icon(
-                                icon: Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                ),
-                                label:Text(
-                                    'Create a order',
-                                    style: GoogleFonts.openSans(
-                                        color: Colors.white
-                                    )
-                                ),
-                                style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all<Color>(Colors.deepPurpleAccent),
-                                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.symmetric(vertical: 0.0,horizontal: 10.0))
-                                ),
-                                onPressed: ()async{
-                                  dynamic ret =await Navigator.pushNamed(context, '/createOrder',arguments: current);
-                                  if(ret!=null){
-                                    this.setState(() {
-                                      if (ret['orders']['completed'] == 1)
-                                        this.recentOrders.add(ret['orders']);
-                                      else
-                                        this.pendingOrders.add(ret['orders']);
-                                      if (ret['payments']['hasPaid'] == 0)
-                                        this.pendingPayments.add(ret['payments']);
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Order added',
-                                          style: GoogleFonts.openSans(),
-                                        ),
-                                        duration: Duration(milliseconds: 800),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                          ],
-                        ),
-                        margin: EdgeInsets.symmetric(vertical: 10.0,horizontal: 5.0),
-                      );
-                      // else return null;
-                    },childCount: 1
-                )
-            ),
             SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2
-                ),
-                delegate: SliverChildBuilderDelegate(
-                        (BuildContext context,int index){
-                      return this.renderProgress(index);
-                    },
-                    childCount: this.targets.length
-                ),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2
               ),
+              delegate: SliverChildBuilderDelegate(
+                      (BuildContext context,int index){
+                    return this.renderProgress(index);
+                  },
+                  childCount: this.targets.length
+              ),
+            ),
             SliverVisibility(
               visible: this.pendingOrders.length>0 ? true: false,
               sliver: SliverList(
@@ -410,13 +390,16 @@ class _HomeState extends State<Home> {
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Colors.white,
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white,
+            backgroundColor: Colors.deepPurpleAccent,
             items:[
               BottomNavigationBarItem(
                 icon:IconButton(
                   icon: Icon(
                     Icons.settings_applications_sharp,
-                    color: Colors.deepPurpleAccent,
+                    color: Colors.white,
+                    size: 30,
                   ),
                   onPressed: (){Navigator.pushNamed(context,'/manage');},
                 ),
@@ -425,18 +408,41 @@ class _HomeState extends State<Home> {
               BottomNavigationBarItem(
                   icon:IconButton(
                     icon: Icon(
-                      Icons.payments_sharp,
-                      color: Colors.deepPurpleAccent,
+                      Icons.add,
+                      color: Colors.white,
+                      size: 35,
                     ),
-                    onPressed: (){Navigator.pushNamed(context, '/payments',arguments: this.currentData['id']);},
+                    onPressed: ()async{
+                      dynamic ret =await Navigator.pushNamed(context, '/createOrder',arguments: current);
+                      if(ret!=null){
+                        this.setState(() {
+                          if (ret['orders']['completed'] == 1)
+                            this.recentOrders.add(ret['orders']);
+                          else
+                            this.pendingOrders.add(ret['orders']);
+                          if (ret['payments']['hasPaid'] == 0)
+                            this.pendingPayments.add(ret['payments']);
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Order added',
+                              style: GoogleFonts.openSans(),
+                            ),
+                            duration: Duration(milliseconds: 800),
+                          ),
+                        );
+                      }
+                    },
                   ),
-                  label: 'Payments'
+                  label: 'Order'
               ),
               BottomNavigationBarItem(
                 icon:IconButton(
                   icon: Icon(
                     Icons.settings,
-                    color: Colors.deepPurpleAccent,
+                    color: Colors.white,
+                    size: 30,
                   ),
                   onPressed: (){Navigator.pushNamed(context, '/settings',arguments:this.currentData['id']);},
                 ),
@@ -625,7 +631,6 @@ class _HomeState extends State<Home> {
       padding: EdgeInsets.all(5.0),
     );
   }
-
   Container recentOrdersObject(int index){
     return Container(
       child: ListTile(

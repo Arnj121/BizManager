@@ -123,6 +123,15 @@ class _SettingsState extends State<Settings> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            Center(
+                              child: Text(
+                                'Stats',
+                                style:GoogleFonts.openSans(
+                                  color:Colors.white,
+                                  fontSize: 25
+                                ),
+                              )
+                            ),
                             Container(
                               child:Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -222,23 +231,66 @@ class _SettingsState extends State<Settings> {
                               bottomLeft: Radius.circular(5),bottomRight: Radius.circular(5))
                         ),
                       ),
-                      Center(
-                        child:TextButton(
-                          onPressed: (){Navigator.pushNamed(context, '/orders',arguments:this.items['id']);},
-                          child: Text(
-                            'View orders',
-                            style: GoogleFonts.openSans(),
-                          ),
-                        )
-                      ),
-                      Center(
-                          child:TextButton(
-                            onPressed: (){Navigator.pushNamed(context, '/payments',arguments:this.items['id']);},
-                            child: Text(
-                              'View payments',
-                              style: GoogleFonts.openSans(),
+                      Container(
+                        child:Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Text(
+                                'Average',
+                                style: GoogleFonts.openSans(
+                                  color: Colors.white,
+                                  fontSize: 25
+                                ),
+                              ),
                             ),
-                          )
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Daily',
+                                  style: GoogleFonts.openSans(
+                                    color:Colors.white,
+                                    fontSize: 20
+                                  ),
+                                ),
+                                Text(
+                                  '0',
+                                  style: GoogleFonts.openSans(
+                                      color:Colors.white,
+                                      fontSize: 20
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Monthly',
+                                  style: GoogleFonts.openSans(
+                                      color:Colors.white,
+                                      fontSize: 20
+                                  ),
+                                ),
+                                Text(
+                                  '0',
+                                  style: GoogleFonts.openSans(
+                                      color:Colors.white,
+                                      fontSize: 20
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent[400],
+                          borderRadius: BorderRadius.circular(5)
+                        ),
+                        margin: EdgeInsets.symmetric(vertical: 10,horizontal: 5),
+                        padding: EdgeInsets.all(15),
                       ),
                       Center(
                         child:Container(
@@ -396,7 +448,7 @@ class _SettingsState extends State<Settings> {
                         child: Column(
                           children: [
                             Text(
-                              'Set Daily Targets',
+                              'Set Daily Target',
                               style: GoogleFonts.openSans(
                                   fontSize: 15
                               ),
@@ -536,6 +588,35 @@ class _SettingsState extends State<Settings> {
                 ),
               )
             ],
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            backgroundColor: Colors.white,
+            selectedItemColor: Colors.blueGrey[800],
+            unselectedItemColor:Colors.blueGrey[800],
+            items:[
+              BottomNavigationBarItem(
+                icon: IconButton(
+                  icon: Icon(
+                    Icons.book_sharp,
+                    color: Colors.blueAccent[400],
+                    size: 30,
+                  ),
+                  onPressed: (){Navigator.pushNamed(context, '/orders',arguments:this.items['id']);},
+                ),
+                label: 'Orders',
+              ),
+              BottomNavigationBarItem(
+                icon: IconButton(
+                  icon: Icon(
+                    Icons.payments_sharp,
+                    size: 30,
+                    color: Colors.blueAccent[400],
+                  ),
+                  onPressed: (){Navigator.pushNamed(context, '/payments',arguments:this.items['id']);},
+                ),
+                label: 'Payments',
+              ),
+            ]
           ),
         )
     );

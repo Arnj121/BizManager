@@ -227,6 +227,16 @@ class DatabaseHelper{
     return l;
   }
 
+  Future<void> DeleteBusiness(int id)async{
+    Database db = await database;
+    await db.delete('business',where: 'id=?',whereArgs: [id]);
+  }
+
+  Future<void> updateBusiness(String name,int id)async{
+    Database db = await database;
+    await db.update('business', {'name':name},where:'id=?',whereArgs: [id]);
+  }
+
   Future<dynamic> searchDate(bid,table,date,month,year) async{
     Database db = await database;String pattern='';
     if(year.length==0)
