@@ -590,15 +590,15 @@ class _SettingsState extends State<Settings> {
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Colors.white,
-            selectedItemColor: Colors.blueGrey[800],
-            unselectedItemColor:Colors.blueGrey[800],
+            backgroundColor: Colors.blueAccent[400],
+            selectedItemColor: Colors.white,
+            unselectedItemColor:Colors.white,
             items:[
               BottomNavigationBarItem(
                 icon: IconButton(
                   icon: Icon(
                     Icons.book_sharp,
-                    color: Colors.blueAccent[400],
+                    color: Colors.white,
                     size: 30,
                   ),
                   onPressed: (){Navigator.pushNamed(context, '/orders',arguments:this.items['id']);},
@@ -610,7 +610,7 @@ class _SettingsState extends State<Settings> {
                   icon: Icon(
                     Icons.payments_sharp,
                     size: 30,
-                    color: Colors.blueAccent[400],
+                    color: Colors.white,
                   ),
                   onPressed: (){Navigator.pushNamed(context, '/payments',arguments:this.items['id']);},
                 ),
