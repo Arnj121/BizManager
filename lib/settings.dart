@@ -590,7 +590,7 @@ class _SettingsState extends State<Settings> {
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Colors.blueAccent[400],
+            backgroundColor: Colors.orangeAccent,
             selectedItemColor: Colors.white,
             unselectedItemColor:Colors.white,
             items:[
