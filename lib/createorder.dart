@@ -254,6 +254,7 @@ class _CreateOrderState extends State<CreateOrder> {
                             if(hasPaid==1) {
                               await db.updatePayment(bid, pid, dueAmt, paidDate, hasPaid);
                               await db.updateTotal(bid, price);
+                              db.checkAchievements(bid);
                             }
                             Navigator.pop(context,{
                               'orders':{'id':id,'pid':pid,'bid':bid,'name':name,'customerName':cust,'customerId':custid,

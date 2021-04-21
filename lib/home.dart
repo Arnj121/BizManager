@@ -20,9 +20,8 @@ class _HomeState extends State<Home> {
   //All the Business data that will be rendered
   List<Map<String,dynamic>> targets = [];
   Map<String,dynamic> currentData = {};
-  List<Map<String,dynamic>> pendingOrders = [],total=[];
+  List<Map<String,dynamic>> pendingOrders = [];
   List<Map<String,dynamic>> pendingPayments = [];
-  List<Map<String,dynamic>> achievements = [];
   List<Map<String,dynamic>> recentOrders = [];
   //END
   int current=0;String name='New';
@@ -35,7 +34,7 @@ class _HomeState extends State<Home> {
     }
     targets = [];
     this.pendingOrders=[];this.pendingPayments=[];
-    this.recentOrders=[];this.total=[];
+    this.recentOrders=[];
     int todayEarn=0,monthEarn=0;
 
     temp = await db.getTargets(current);
@@ -61,11 +60,10 @@ class _HomeState extends State<Home> {
 
       DateTime d, tod = DateTime.now();
 
-      total = await db.getPayments(current, 0, 0);
-      total.forEach((element) {
+      temp = await db.getCompletedPayments(current, 1 );
+      temp.forEach((element) {
         d = DateTime.parse(element['date']);
-        if (d.month == tod.month && d.year == tod.year &&
-            element['hasPaid'] == 1) {
+        if (d.month == tod.month && d.year == tod.year) {
           monthEarn += element['amount'];
           if (d.day == tod.day)
             todayEarn += element['amount'];
@@ -455,7 +453,7 @@ class _HomeState extends State<Home> {
   }
 
   Container renderProgress(index) {
-    dynamic percent=0.0;String txt='0.00 %';
+    dynamic percent=0.0;String txt='0.0 %';
     Color Font= Colors.orange,Back=Colors.orange[50],Prog=Colors.orangeAccent;
     if(this.targets[index]['target']>0){
       if(this.targets[index]['value']>=this.targets[index]['target']){

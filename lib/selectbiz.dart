@@ -47,9 +47,13 @@ class _SelectBizState extends State<SelectBiz> {
                   (BuildContext context,int index){
                     return Container(
                       child: ListTile(
-                        leading: Icon(
-                          Icons.business,
-                          color: Colors.white,
+                        leading: CircleAvatar(
+                          child: Icon(
+                            Icons.business,
+                            color: Colors.redAccent,
+                          ),
+                          maxRadius: 30,
+                          backgroundColor: Colors.white,
                         ),
                         minLeadingWidth: 30.0,
                         onTap: (){

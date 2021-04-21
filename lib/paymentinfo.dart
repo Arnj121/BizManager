@@ -267,6 +267,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                     }
                     await db.updatePayment(this.items['bid'], this.items['id'], this.items['dueAmount'],this.items['paidDate'],hasPaid);
                     await db.updateTotal(this.items['bid'],price);
+                    db.checkAchievements(this.items['bid']);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(

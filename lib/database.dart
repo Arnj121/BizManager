@@ -35,7 +35,9 @@ class DatabaseHelper{
               dailyTarget integer,
               monthlyTarget integer,
               dtimes integer,
-              mtimes integer
+              mtimes integer,
+              dlast text,
+              mlast text
     )''');
     await db.execute('''CREATE table payments(
               id integer primary key,
@@ -86,6 +88,8 @@ class DatabaseHelper{
       'monthlyTarget': mt,
       'mtimes':0,
       'dtimes':0,
+      'dlast':'',
+      'mlast':''
     });
   }
   Future<void> addOrder(int id,int pid,int bid,String name,String desc,int price,String dueDate,String paidDate,int dueAmount,int hasPaid,int complete,String completedDate,String custname,int custid) async{
@@ -166,10 +170,10 @@ class DatabaseHelper{
     }
   }
 
-  Future<int> getCompletedPayments(int bid,int completed)async{
+  Future<List<Map<String,dynamic>>> getCompletedPayments(int bid,int completed)async{
     Database db= await database;
     dynamic l = await db.query('payments',where:'bid=? and hasPaid=?',whereArgs: [bid,completed]);
-    return l.length;
+    return l;
   }
 
   Future<List<Map<String,dynamic>>> getTodayPayments(int bid)async{
@@ -237,6 +241,56 @@ class DatabaseHelper{
     await db.update('business', {'name':name},where:'id=?',whereArgs: [id]);
   }
 
+  Future<void> checkAchievements(int bid) async{
+    Database db = await database;
+    DateTime d, tod = DateTime.now();
+    dynamic temp,dates =await db.query('business',where:'id=?',whereArgs: [bid]);
+    temp = await this.getCompletedPayments(bid, 1);
+    int todayEarn=0,monthEarn=0;
+    temp.forEach((element) {
+      d = DateTime.parse(element['date']);
+      if (d.month == tod.month && d.year == tod.year) {
+        monthEarn += element['amount'];
+        if (d.day == tod.day)
+          todayEarn += element['amount'];
+      }
+    });
+    if(dates[0]['dlast'].length>0) {
+      DateTime dlast = DateTime.parse(dates[0]['dlast']);
+      if (dlast.day != tod.day && todayEarn >= dates[0]['dailyTarget']) {
+          await db.update('business', {
+            'dlast': DateTime.now().toString(),
+            'dtimes': dates[0]['dtimes'] + 1
+          });
+          print(264);
+      }
+    }
+    else if( todayEarn >= dates[0]['dailyTarget']){
+      await db.update('business', {
+        'dlast': DateTime.now().toString(),
+        'dtimes': dates[0]['dtimes'] + 1
+      });
+      print(272);
+    }
+    if(dates[0]['mlast'].length>0) {
+      DateTime mlast = DateTime.parse(dates[0]['mlast']);
+      if (mlast.month != tod.month && monthEarn >= dates[0]['monthlyTarget']) {
+          await db.update('business', {
+            'mlast': DateTime.now().toString(),
+            'mtimes': dates[0]['mtimes'] + 1
+          });
+          print(280);
+      }
+    }
+    else if(monthEarn >= dates[0]['monthlyTarget']){
+      await db.update('business', {
+        'mlast': DateTime.now().toString(),
+        'mtimes': dates[0]['mtimes'] + 1
+      });
+      print(288);
+    }
+  }
+
   Future<dynamic> searchDate(bid,table,date,month,year) async{
     Database db = await database;String pattern='';
     if(year.length==0)
@@ -258,11 +312,13 @@ class DatabaseHelper{
       pattern+=date;
     }
     pattern+='%';
+    print(pattern);
     dynamic l;
     if(table=='orders')
       l =await db.query(table,where: 'bid=? and date like ?',whereArgs: [bid,pattern]);
     else
       l = await db.query(table,where:'bid=? and paidDate like ?',whereArgs: [bid,pattern]);
+    print(l);
     return l;
   }
 

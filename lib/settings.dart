@@ -12,8 +12,9 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
 
   int bid;
-  dynamic items=[];
-  int dailyTarget,monthlyTarget,dtimes,mtimes,total,OrdersCompleted,paymentsRec,paymentsDue,ordersrec;
+  dynamic items={};
+  int dailyTarget,monthlyTarget,dtimes,mtimes,total,OrdersCompleted;
+  int paymentsRec,paymentsDue,ordersrec,dailyaverage=0,monthlyaverage=0;
   DatabaseHelper db = DatabaseHelper.instance;
 
   TextEditingController dcont = TextEditingController();
@@ -29,9 +30,20 @@ class _SettingsState extends State<Settings> {
     total = items['totalMoney'];
     dcont.text=dailyTarget.toString();mcont.text=monthlyTarget.toString();
     OrdersCompleted =await db.getCompletedOrders(items['id'], 1);
-    paymentsRec = await db.getCompletedPayments(items['id'], 1);
-    paymentsDue=await db.getCompletedPayments(items['id'], 0);
-    dynamic temp =await db.getOrders(items['id'], 0);
+    dynamic temp = await db.getCompletedPayments(items['id'], 1);
+    int d=0,m=0;
+    temp.forEach((element){
+      d+=element['amount'];
+      m+=element['amount'];
+    });
+    if(temp.length>0) {
+      dailyaverage = int.parse((d / temp.length).toStringAsFixed(0));
+      monthlyaverage = int.parse((m / (temp.length / 30)).toStringAsFixed(0));
+    }
+    paymentsRec =temp.length;
+    temp=await db.getCompletedPayments(items['id'], 0);
+    paymentsDue=temp.length;
+    temp =await db.getOrders(items['id'], 0);
     ordersrec=temp.length;
     this.setState(() {});
     return true;
@@ -85,7 +97,7 @@ class _SettingsState extends State<Settings> {
                               maxRadius: 40,
                             ),
                             Text(
-                              this.items['name'],
+                              this.items['name']==null?'':this.items['name'],
                               style: GoogleFonts.openSans(
                                   fontSize: 25.0,
                                   color: Colors.deepPurpleAccent
@@ -255,7 +267,7 @@ class _SettingsState extends State<Settings> {
                                   ),
                                 ),
                                 Text(
-                                  '0',
+                                  dailyaverage.toString(),
                                   style: GoogleFonts.openSans(
                                       color:Colors.white,
                                       fontSize: 20
@@ -275,13 +287,24 @@ class _SettingsState extends State<Settings> {
                                   ),
                                 ),
                                 Text(
-                                  '0',
+                                  monthlyaverage.toString(),
                                   style: GoogleFonts.openSans(
                                       color:Colors.white,
                                       fontSize: 20
                                   ),
                                 ),
                               ],
+                            ),
+                            SizedBox(height: 10,),
+                            Center(
+                              child:Text(
+                                'Note: monthly average is just an estimate based on your current earning trend.',
+                                style: GoogleFonts.openSans(
+                                  color: Colors.white,
+                                  fontSize: 15
+                                ),
+                                softWrap: true,
+                              ),
                             )
                           ],
                         ),
@@ -498,6 +521,7 @@ class _SettingsState extends State<Settings> {
                                   this.setState(() {
                                     dailyTarget=target;
                                   });
+                                  FocusScope.of(context).unfocus();
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(SnackBar(
                                     content: Text(
@@ -568,6 +592,7 @@ class _SettingsState extends State<Settings> {
                                     this.setState(() {
                                       monthlyTarget=target;
                                     });
+                                    FocusScope.of(context).unfocus();
                                     ScaffoldMessenger.of(context)
                                         .showSnackBar(SnackBar(
                                       content: Text(

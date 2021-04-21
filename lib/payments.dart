@@ -189,7 +189,6 @@ class _PaymentsState extends State<Payments> {
                                   color: Colors.blueGrey[700],
                                 ),
                                 onPressed: ()async{
-                                  //TODO
                                   dynamic date1 = date.text;
                                   dynamic month1 = month.text;
                                   dynamic year1 = year.text;
@@ -199,9 +198,11 @@ class _PaymentsState extends State<Payments> {
                                   month1 = month1.length==0? '*' : month1;
                                   year1 = year1.length==0? '*' : year1;
                                   this.setState(() {
-                                    items=ret;
-                                    initData();
-                                    Date=date1+'/'+month1+'/'+year1;
+                                    this.items=ret;
+                                    this.Date=date1+'/'+month1+'/'+year1;
+                                    if(ret.length==0)
+                                      visible=true;
+                                    else visible=false;
                                   });
                                 },
                                 style: ButtonStyle(
