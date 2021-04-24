@@ -19,7 +19,7 @@ class _SettingsState extends State<Settings> {
 
   TextEditingController dcont = TextEditingController();
   TextEditingController mcont = TextEditingController();
-
+  bool lightmode=true;
   Future<bool> initData()async{
     bid =ModalRoute.of(context).settings.arguments;
     items = await db.getTargets(bid);items=items[0];
@@ -56,11 +56,12 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: lightmode?Colors.white : null,
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: lightmode?Colors.white : null,
             elevation: 0,
             leading: BackButton(color: Colors.deepPurpleAccent),
             title: Text(
@@ -116,7 +117,7 @@ class _SettingsState extends State<Settings> {
                               'Total revenue',
                               style: GoogleFonts.openSans(
                                   fontSize: 25.0,
-                                  color: Colors.blueGrey[800]
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white
                               ),
                             ),
                             SizedBox(height: 10,),
@@ -124,7 +125,7 @@ class _SettingsState extends State<Settings> {
                               total.toString(),
                               style: GoogleFonts.openSans(
                                   fontSize: 20.0,
-                                  color: Colors.blueGrey[800]
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white
                               ),
                             ),
                             SizedBox(height: 20,),

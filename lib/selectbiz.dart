@@ -10,7 +10,7 @@ class SelectBiz extends StatefulWidget {
 class _SelectBizState extends State<SelectBiz> {
 
   List<Map<String,dynamic>> items=[];
-
+  bool lightmode=true;
   void initData() async{
     DatabaseHelper db = DatabaseHelper.instance;
     items=await db.getBusiness();
@@ -26,22 +26,23 @@ class _SelectBizState extends State<SelectBiz> {
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: lightmode?Colors.white : null,
+          title: Text(
+            'Select a business',
+            style: GoogleFonts.openSans(
+                color: Colors.redAccent
+            ),
+          ),
+          titleSpacing: 0,
+          leading: BackButton(color: Colors.redAccent),
+        ),
+        backgroundColor: lightmode?Colors.white : null,
         body: CustomScrollView(
           slivers: [
-            SliverAppBar(
-              backgroundColor: Colors.white,
-              title: Text(
-                'Select a business',
-                style: GoogleFonts.openSans(
-                  color: Colors.redAccent
-                ),
-              ),
-              titleSpacing: 0,
-              leading: BackButton(color: Colors.redAccent),
-            ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
                   (BuildContext context,int index){

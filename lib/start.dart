@@ -8,7 +8,7 @@ class Start extends StatefulWidget {
 
 class _LoadingState extends State<Start> {
   DatabaseHelper db = DatabaseHelper.instance;
-  List<Map<String,dynamic>> items=[];
+  List<Map<String,dynamic>> items=[];bool lightmode=true;
   Future<void> initData()async{
     items = await db.getBusiness();
     if(items.length>0){
@@ -22,12 +22,13 @@ class _LoadingState extends State<Start> {
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
         child: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: lightmode?Colors.white : null,
             appBar: AppBar(
+              backgroundColor: lightmode?Colors.white : null,
               elevation: 0,
-              backgroundColor: Colors.white,
               leading: Icon(
                 Icons.book_sharp,
                 color: Colors.redAccent,

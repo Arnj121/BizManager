@@ -12,29 +12,30 @@ class _AddBusinessState extends State<AddBusiness> {
 
   DatabaseHelper db = DatabaseHelper.instance;
   TextEditingController nameController = TextEditingController();
-  Random rnd = Random();
+  Random rnd = Random();bool lightmode=true;
   DateTime d = DateTime.now();
   List<String> months=['Jan','Feb','Mar','Apr','May', 'Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: lightmode? Colors.white : null,
+          leading: BackButton(
+            color: Colors.redAccent,
+          ),
+          title:Text(
+            'Add a Business',
+            style: GoogleFonts.openSans(
+                color: Colors.redAccent
+            ),
+          ),
+        ),
         body: CustomScrollView(
           slivers: [
-            SliverAppBar(
-              backgroundColor: Colors.white,
-              leading: BackButton(
-                color: Colors.redAccent,
-              ),
-              titleSpacing: 0.0,
-              title:Text(
-                'Add a Business',
-                style: GoogleFonts.openSans(
-                  color: Colors.redAccent
-                ),
-              ),
-            ),
             SliverList(
               delegate: SliverChildListDelegate(
                   [
@@ -74,7 +75,7 @@ class _AddBusinessState extends State<AddBusiness> {
                           Text(
                             d.day.toString()+' '+months[d.month]+' '+d.year.toString(),
                             style: GoogleFonts.openSans(
-                              color: Colors.blueGrey[800],
+                              color: lightmode? Colors.blueGrey[800] : Colors.white,
                               fontSize: 20.0
                             ),
                           )

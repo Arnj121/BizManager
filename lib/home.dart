@@ -25,7 +25,7 @@ class _HomeState extends State<Home> {
   List<Map<String,dynamic>> recentOrders = [];
   //END
   int current=0;String name='New';
-
+  bool lightmode=true;
   Future<bool> getBusinessData({int m=0})async{
     dynamic temp;
     if(m==0) {
@@ -87,7 +87,6 @@ class _HomeState extends State<Home> {
       return true;
     }
   }
-
   @override void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -96,68 +95,66 @@ class _HomeState extends State<Home> {
   }
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
+        appBar: AppBar(
+          backgroundColor:lightmode? Colors.white : null,
+          elevation: 0,
+          titleSpacing: 0,
+          leading: Icon(
+            Icons.book_sharp,
+            color: Colors.redAccent,
+            size: 30.0,
+          ),
+          title: Text(
+            'BizManager',
+            style: GoogleFonts.openSans(
+                color: Colors.redAccent,
+                fontWeight:FontWeight.bold
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon:Icon(
+                Icons.refresh,
+                color: Colors.redAccent[400],
+              ),
+              onPressed: ()async{
+                await this.getBusinessData(m:1);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Refreshed',
+                        style: GoogleFonts.openSans(),
+                      ),
+                      duration: Duration(milliseconds: 800),
+                    )
+                );
+              },
+            ),
+            IconButton(
+              icon:Icon(
+                Icons.add,
+                color: Colors.redAccent,
+                size: 30,
+              ),
+              onPressed: ()async {
+                dynamic ret= await Navigator.pushNamed(context, '/addnew');
+                if(ret!=null) {
+                  // this.setState(() {
+                  this.name = ret['name'];
+                  this.current = ret['id'];
+                  getBusinessData(m:1);
+                  // });
+                }
+              },
+            )
+          ],
+        ),
         body: CustomScrollView(
           slivers: [
-            SliverAppBar(
-              pinned: true,
-              leading: Icon(
-                Icons.book_sharp,
-                color: Colors.redAccent,
-                size: 30.0,
-              ),
-              title: Text(
-                'BizManager',
-                style: GoogleFonts.openSans(
-                    color: Colors.redAccent,
-                    fontWeight:FontWeight.bold
-                ),
-              ),
-              titleSpacing: 2.0,
-              backgroundColor: Colors.white,
-              actions: [
-                IconButton(
-                  icon:Icon(
-                    Icons.refresh,
-                    color: Colors.redAccent[400],
-                  ),
-                  onPressed: ()async{
-                    await this.getBusinessData(m:1);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Refreshed',
-                          style: GoogleFonts.openSans(),
-                        ),
-                        duration: Duration(milliseconds: 800),
-                      )
-                    );
-                    },
-                ),
-                IconButton(
-                  icon:Icon(
-                    Icons.add,
-                    color: Colors.redAccent,
-                    size: 30,
-                  ),
-                  onPressed: ()async {
-                    dynamic ret= await Navigator.pushNamed(context, '/addnew');
-                    if(ret!=null) {
-                      // this.setState(() {
-                      this.name = ret['name'];
-                      this.current = ret['id'];
-                      getBusinessData(m:1);
-                      // });
-                    }
-                  },
-                  // onPressed: ()async{
-                  //   await db.clearAll();
-                  // },
-                )
-              ],
-            ),
             SliverList(
               delegate: SliverChildListDelegate(
                 [
@@ -250,7 +247,7 @@ class _HomeState extends State<Home> {
                             Text(
                               'Pending Orders',
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode? Colors.blueGrey[800] : Colors.white,
                                   fontSize: 20.0
                               ),
                             ),
@@ -345,7 +342,7 @@ class _HomeState extends State<Home> {
                         child: Text(
                           'Recent orders',
                           style: GoogleFonts.openSans(
-                              color: Colors.blueGrey[800],
+                              color: lightmode? Colors.blueGrey[800]: Colors.white,
                               fontSize: 20.0
                           ),
                         ),
@@ -373,7 +370,7 @@ class _HomeState extends State<Home> {
                             'No recent orders',
                             style: GoogleFonts.openSans(
                                 fontSize: 15.0,
-                                color: Colors.blueGrey[800]
+                                color: lightmode?Colors.blueGrey[800]:Colors.white
                             ),
                           ),
                         ),

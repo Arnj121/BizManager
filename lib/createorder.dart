@@ -16,7 +16,7 @@ class _CreateOrderState extends State<CreateOrder> {
   TextEditingController custnameController = TextEditingController();
   TextEditingController descController = TextEditingController();
   TextEditingController priceController = TextEditingController();
-  Random rnd= Random();
+  Random rnd= Random();bool lightmode=true;
   DatabaseHelper db= DatabaseHelper.instance;
   int id,pid,bid;bool complete=false,paymentrec=false;
   String paymentdue='',paymentDueDate='';
@@ -25,25 +25,25 @@ class _CreateOrderState extends State<CreateOrder> {
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     bid = ModalRoute.of(context).settings.arguments;
     id = rnd.nextInt(100000);
     pid = rnd.nextInt(100000);
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
+        appBar: AppBar(
+          backgroundColor: lightmode?Colors.white : null,
+          leading: BackButton(color: Colors.deepPurpleAccent),
+          title: Text(
+            'Create Order',
+            style: GoogleFonts.openSans(
+                color: Colors.deepPurpleAccent
+            ),
+          ),
+        ),
         body: CustomScrollView(
           slivers: [
-            SliverAppBar(
-              backgroundColor: Colors.white,
-              leading: BackButton(color: Colors.deepPurpleAccent),
-              title: Text(
-                'Create Order',
-                style: GoogleFonts.openSans(
-                  color: Colors.deepPurpleAccent
-                ),
-              ),
-              titleSpacing: 0,
-            ),
             SliverList(
               delegate: SliverChildListDelegate(
                 [
@@ -118,7 +118,7 @@ class _CreateOrderState extends State<CreateOrder> {
                           Text(
                             d.day.toString()+' '+this.months[d.month]+' '+d.year.toString().substring(0,2),
                             style: GoogleFonts.openSans(
-                              color: Colors.blueGrey[800],
+                              color: lightmode ?Colors.blueGrey[800]:Colors.white,
                               fontSize: 20.0
                             ),
                           )

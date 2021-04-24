@@ -25,7 +25,6 @@ class _LoadingState extends State<Loading> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-            backgroundColor: Colors.white,
             body: Center(
               child: SpinKitFoldingCube(
                 size: 50.0,

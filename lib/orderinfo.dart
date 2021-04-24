@@ -14,9 +14,10 @@ class _OrderInfoState extends State<OrderInfo> {
   Map<String,dynamic> items={};
   String date='';String completed='Not completed';
   List<String> months=['Jan','Feb','Mar','Apr','May', 'Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  DatabaseHelper db=  DatabaseHelper.instance;
+  DatabaseHelper db=  DatabaseHelper.instance;bool lightmode=true;
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     items=ModalRoute.of(context).settings.arguments;
     DateTime temp=DateTime.parse(items['date'].toString());
     date=temp.day.toString()+' '+months[temp.month]+' '+temp.year.toString();
@@ -29,9 +30,9 @@ class _OrderInfoState extends State<OrderInfo> {
       percent=0.99;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: lightmode?Colors.white : null,
           elevation: 0,
           leading: BackButton(color: Colors.deepPurpleAccent),
           titleSpacing: 0,
@@ -76,7 +77,7 @@ class _OrderInfoState extends State<OrderInfo> {
                       this.items['name'],
                       style: GoogleFonts.openSans(
                         fontSize: 30.0,
-                        color: Colors.blueGrey[800]
+                        color: lightmode?Colors.blueGrey[800]:Colors.white
                       ),
                     ),
                   ),
@@ -110,7 +111,7 @@ class _OrderInfoState extends State<OrderInfo> {
                             Text(
                               date,
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )
@@ -131,7 +132,7 @@ class _OrderInfoState extends State<OrderInfo> {
                             Text(
                               this.items['customerName'].toString(),
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )
@@ -152,7 +153,7 @@ class _OrderInfoState extends State<OrderInfo> {
                             Text(
                               this.items['price'].toString(),
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )
@@ -173,7 +174,7 @@ class _OrderInfoState extends State<OrderInfo> {
                             Text(
                               completed,
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )

@@ -13,7 +13,7 @@ class Orders extends StatefulWidget {
 class _PaymentsState extends State<Orders> {
 
   DatabaseHelper db = DatabaseHelper.instance;
-  List<Map<String,dynamic>> items=[];
+  List<Map<String,dynamic>> items=[];bool lightmode=true;
   List<String> months=['Jan','Feb','Mar','Apr','May', 'Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   TextEditingController searchcont = TextEditingController();
   IconData icon = Icons.arrow_downward_sharp;String order='asc',column='completed';
@@ -40,10 +40,12 @@ class _PaymentsState extends State<Orders> {
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
       child: Scaffold(
-        backgroundColor:Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
         appBar: AppBar(
+          backgroundColor: lightmode?Colors.white : null,
           leading: BackButton(color: Colors.redAccent),
           title: Text(
             'Orders',
@@ -52,7 +54,6 @@ class _PaymentsState extends State<Orders> {
             ),
           ),
           titleSpacing: 0,
-          backgroundColor:Colors.white,
           elevation: 0,
           actions: [
             IconButton(
@@ -116,6 +117,17 @@ class _PaymentsState extends State<Orders> {
                           Icons.search,
                           color: Colors.grey[800],
                         ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1,color: Colors.grey[850]),
+                        ),
+                        disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1,color: Colors.grey[850]),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1,color: Colors.grey[850]),
+                        ),
+                        fillColor:lightmode? Colors.white:Colors.grey[900],
+                        filled: true,
                         suffixIcon: IconButton(
                           icon:Icon(
                             Icons.cancel,
@@ -382,7 +394,7 @@ class _PaymentsState extends State<Orders> {
                     child:Text(
                       'No orders found',
                       style: GoogleFonts.openSans(
-                        color: Colors.grey[800],
+                        color: lightmode ?Colors.grey[800]:Colors.white,
                         fontSize: 20
                       ),
                       )
@@ -428,21 +440,21 @@ class _PaymentsState extends State<Orders> {
         title: Text(
           this.items[index]['name'],
           style: GoogleFonts.openSans(
-              color:Colors.grey[800],
+              color:lightmode?Colors.grey[800] : Colors.white,
               fontSize: 20
           ),
         ),
         trailing: Text(
           this.items[index]['price'].toString(),
           style: GoogleFonts.openSans(
-              color:Colors.grey[800],
+              color:lightmode?Colors.grey[800] : Colors.white,
               fontSize: 15
           ),
         ),
         subtitle: Text(
           txt,
           style: GoogleFonts.openSans(
-              color: Colors.grey[800]
+              color: lightmode?Colors.grey[800] : Colors.white
           ),
         ),
       ),

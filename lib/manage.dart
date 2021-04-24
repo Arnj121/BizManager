@@ -9,7 +9,7 @@ class Manage extends StatefulWidget {
 class _ManageState extends State<Manage> {
   List<String> months=['Jan','Feb','Mar','Apr','May', 'Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  List<Map<String,dynamic>> items=[];
+  List<Map<String,dynamic>> items=[];bool lightmode=true;
   List<bool> visibility=[],editing=[];List<TextEditingController> controllers=[];
   DatabaseHelper db = DatabaseHelper.instance;
   Future<bool> initData()async{
@@ -29,11 +29,12 @@ class _ManageState extends State<Manage> {
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: lightmode?Colors.white : null,
           elevation: 0,
           leading: BackButton(color: Colors.deepPurpleAccent),
           title: Text(

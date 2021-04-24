@@ -15,12 +15,13 @@ class _PaymentInfoState extends State<PaymentInfo> {
   DatabaseHelper db=  DatabaseHelper.instance;
   Map<dynamic,dynamic> items={};
   String date='',duedate='No due date',paiddate='Not paid';
-  dynamic percent=0.0;
+  dynamic percent=0.0;bool lightmode=true;
   TextEditingController controller  = TextEditingController();
   List<String> months=['Jan','Feb','Mar','Apr','May', 'Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     items = ModalRoute.of(context).settings.arguments;
     DateTime temp=DateTime.parse(items['date']);
     date=temp.day.toString()+' '+months[temp.month]+' '+temp.year.toString();
@@ -38,10 +39,10 @@ class _PaymentInfoState extends State<PaymentInfo> {
       controller.text=this.items['dueAmount'].toString();
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: lightmode?Colors.white : null,
           title: Text(
             'Payments info',
             style: GoogleFonts.openSans(
@@ -56,6 +57,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
             SliverList(
               delegate: SliverChildListDelegate(
                 [
+                  SizedBox(height: 30,),
                   Center(
                     child: CircularPercentIndicator(
                       center: Icon(
@@ -77,7 +79,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                         this.items['name'],
                         style: GoogleFonts.openSans(
                           fontSize: 30.0,
-                          color: Colors.deepPurpleAccent[400]
+                          color: lightmode?Colors.deepPurpleAccent[400]:Colors.white
                         ),
                       ),
                       margin: EdgeInsets.all(5.0),
@@ -101,7 +103,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                             Text(
                               this.items['amount'].toString(),
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                 fontSize: 20
                               ),
                             )
@@ -122,7 +124,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                             Text(
                               date,
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )
@@ -143,7 +145,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                             Text(
                               duedate,
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )
@@ -164,7 +166,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                             Text(
                               this.items['dueAmount'].toString(),
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )
@@ -185,7 +187,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
                             Text(
                               paiddate,
                               style: GoogleFonts.openSans(
-                                  color: Colors.blueGrey[800],
+                                  color: lightmode?Colors.blueGrey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )

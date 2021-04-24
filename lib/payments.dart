@@ -20,7 +20,7 @@ class _PaymentsState extends State<Payments> {
   TextEditingController date=TextEditingController();
   TextEditingController month=TextEditingController();
   TextEditingController year=TextEditingController();
-  bool visible=false;int bid;String Date='';
+  bool visible=false,lightmode=true;int bid;String Date='';
   Future<bool> initData()async{
     items=[];
     bid = ModalRoute.of(context).settings.arguments;
@@ -40,10 +40,12 @@ class _PaymentsState extends State<Payments> {
 
   @override
   Widget build(BuildContext context) {
+    lightmode = MediaQuery.of(context).platformBrightness == Brightness.light;
     return SafeArea(
       child: Scaffold(
-        backgroundColor:Colors.white,
+        backgroundColor: lightmode?Colors.white : null,
         appBar: AppBar(
+          backgroundColor: lightmode?Colors.white : null,
           leading: BackButton(color: Colors.orangeAccent),
           title: Text(
             'Payments',
@@ -52,7 +54,6 @@ class _PaymentsState extends State<Payments> {
             ),
           ),
           titleSpacing: 0,
-          backgroundColor:Colors.white,
           elevation: 0,
           actions: [
             IconButton(
@@ -109,23 +110,34 @@ class _PaymentsState extends State<Payments> {
                       child: TextField(
                         controller: searchcont,
                         decoration: InputDecoration(
-                            hintText: 'Search',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(vertical: 5,horizontal:10),
-                            prefixIcon: Icon(
-                              Icons.search,
+                          hintText: 'Search',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(vertical: 5,horizontal:10),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Colors.grey[800],
+                          ),
+                          suffixIcon: IconButton(
+                            icon:Icon(
+                              Icons.cancel,
                               color: Colors.grey[800],
                             ),
-                            suffixIcon: IconButton(
-                              icon:Icon(
-                                Icons.cancel,
-                                color: Colors.grey[800],
-                              ),
-                              onPressed: (){
-                                searchcont.text='';
-                                initData();
+                            onPressed: (){
+                              searchcont.text='';
+                              initData();
                               },
-                            )
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1,color: Colors.grey[850]),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1,color: Colors.grey[850]),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1,color: Colors.grey[850]),
+                          ),
+                          fillColor:lightmode? Colors.white:Colors.grey[900],
+                          filled: true
                         ),
                         onChanged: (text)async{
                           if(text.length>2){
@@ -368,7 +380,7 @@ class _PaymentsState extends State<Payments> {
                             child:Text(
                               'No payments found',
                               style: GoogleFonts.openSans(
-                                  color: Colors.grey[800],
+                                  color: lightmode ?Colors.grey[800]:Colors.white,
                                   fontSize: 20
                               ),
                             )
@@ -404,21 +416,21 @@ class _PaymentsState extends State<Payments> {
         title: Text(
           this.items[index]['name'],
           style: GoogleFonts.openSans(
-            color:Colors.grey[800],
+            color:lightmode ?Colors.grey[800]:Colors.white,
             fontSize: 20
           ),
         ),
         trailing: Text(
           this.items[index]['amount'].toString(),
           style: GoogleFonts.openSans(
-              color:Colors.grey[800],
+              color:lightmode ?Colors.grey[800]:Colors.white,
               fontSize: 15
           ),
         ),
         subtitle: Text(
           txt,
           style: GoogleFonts.openSans(
-            color: Colors.grey[800]
+            color: lightmode ?Colors.grey[800]:Colors.white
           ),
         ),
       ),
