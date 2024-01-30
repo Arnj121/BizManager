@@ -1,16 +1,14 @@
-# business
+# BizManager
 
-A new Flutter application.
+An App built using the Flutter framework which allows business owners to manage all their businesses in one place. The motivation to build this app was to help small businesses keep track of orders and revenue and toggle between multiple businesses within the app.
 
-## Getting Started
+## Installation
+- Download the app-release.apk, copy it onto your device, and install it.
+## Contribution
+- If you want to modify the app, then clone this repo using ``git clone https://github.com/Arnj121/BizManager``
+- Download the Android Studio, open the repo as the project, and modify and compile the code to generate iOS and Android-compatible installation files.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Features
+- The app allows you to register multiple businesses which can be toggled from the main screen.
+- allows creating orders and payments and provides history along with it.
+- Viewable dashboard of revenue and orders for analysis.
