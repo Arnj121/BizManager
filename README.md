@@ -5,7 +5,7 @@ An App built using the Flutter framework which allows business owners to manage 
 ## Installation
 - Download the app-release.apk, copy it onto your device, and install it.
 ## Contribution
-- If you want to modify the app, then clone this repo using ``git clone https://github.com/Arnj121/BizManager``
+- If you want to modify the app, then clone this repo using ``git clone https://github.com/Arnj121/BizManager.git``
 - Download the Android Studio, open the repo as the project, and modify and compile the code to generate iOS and Android-compatible installation files.
 
 ## Features
